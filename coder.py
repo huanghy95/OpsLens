@@ -126,7 +126,6 @@ class Coder(RoutedAgent):
             print(f"\n{'-'*80}\n{self._name} Assistant:\n{result.content}")
             self._chat_history.append(AssistantMessage(content=result.content, source="assistant"))
         
-            # 保存结果到notebook
             compressed_output = compress_duplicate_messages(result.content)
             Coder._notebook.save_response(self._name, compressed_output)
             

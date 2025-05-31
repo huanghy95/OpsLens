@@ -165,4 +165,3 @@ if __name__ == "__main__":
     
     
     
-    # asyncio.run(diagnose("On March 4, 2021, within the time range of 14:55 to 15:00, a single failure was detected in the system. The exact time when the root cause occurred is unknown. Please identify the specific occurrence time of the root cause", "系统崩溃了", ["系统崩溃了"]))

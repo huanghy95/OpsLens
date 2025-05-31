@@ -137,7 +137,7 @@ class DiagnosisWorkflow:
         
         # 3. Update agents dictionary
         workflow.agents.update({
-            "executor": workflow.executor_agent,  # executor放在前面
+            "executor": workflow.executor_agent,  
             "metric_coder": workflow.metric_coder,
             "log_coder": workflow.log_coder,
             "trace_coder": workflow.trace_coder
@@ -315,7 +315,6 @@ class DiagnosisWorkflow:
 
 
     async def run_investigation(self, investigator_msg: str) -> List[Dict]:
-        """执行调查阶段,支持多轮调查"""
         start_time = datetime.now()
         print(f"[Time Statistics] Investigation phase start: {start_time}")
         
