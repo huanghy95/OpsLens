@@ -1,8 +1,0 @@
-import subprocess
-import sys
-
-# Function to install required packages
-def install_packages():
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "--index-url", "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple", "pandas", "numpy", "pytz"])
-
-install_packages()

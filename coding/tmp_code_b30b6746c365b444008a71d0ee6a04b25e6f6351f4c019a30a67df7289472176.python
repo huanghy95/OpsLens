@@ -1,5 +1,0 @@
-import subprocess
-import sys
-
-# Install required packages using subprocess
-subprocess.check_call([sys.executable, "-m", "pip", "install", "pandas", "numpy", "pytz", "--index-url", "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"])
