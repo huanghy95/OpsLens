@@ -109,7 +109,6 @@ What you SHOULD NOT do:
 
 
 
-#------------------------------------------------------------------------------ 
 cand = """## POSSIBLE ROOT CAUSE REASONS:
         
 - high CPU usage

@@ -137,7 +137,7 @@ class DiagnosisWorkflow:
         
         # 3. Update agents dictionary
         workflow.agents.update({
-            "executor": workflow.executor_agent,  
+            "executor": workflow.executor_agent,
             "metric_coder": workflow.metric_coder,
             "log_coder": workflow.log_coder,
             "trace_coder": workflow.trace_coder
