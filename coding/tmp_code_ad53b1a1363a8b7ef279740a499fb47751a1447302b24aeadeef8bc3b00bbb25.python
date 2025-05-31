@@ -1,0 +1,56 @@
+import pandas as pd
+import os
+from datetime import datetime, timedelta
+import pytz
+
+# Define the path to the trace_span.csv file for March 10, 2021
+trace_file_path = './dataset/Bank/telemetry/2021_03_10/trace/trace_span.csv'
+
+# Load the trace data
+trace_data = pd.read_csv(trace_file_path)
+
+# Convert the timestamp from milliseconds to seconds and then to a datetime object
+trace_data['datetime'] = pd.to_datetime(trace_data['timestamp'], unit='ms', utc=True)
+trace_data['datetime'] = trace_data['datetime'].dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+
+# Filter the data for the time window between 15:00 and 15:30 on March 10, 2021
+start_time = datetime(2021, 3, 10, 15, 0, 0)
+end_time = datetime(2021, 3, 10, 15, 30, 0)
+filtered_trace_data = trace_data[(trace_data['datetime'] >= start_time) & (trace_data['datetime'] < end_time)]
+
+# Focus on network-related components (Tomcat01-Tomcat04, IG01-IG02, MG01-MG02)
+network_components = ['Tomcat01', 'Tomcat02', 'Tomcat03', 'Tomcat04', 'IG01', 'IG02', 'MG01', 'MG02']
+filtered_trace_data = filtered_trace_data[filtered_trace_data['cmdb_id'].isin(network_components)]
+
+# Aggregate spans per cmdb_id in 1-minute intervals
+filtered_trace_data.set_index('datetime', inplace=True)
+span_counts = filtered_trace_data.groupby([pd.Grouper(freq='1T'), 'cmdb_id']).size().unstack(fill_value=0)
+
+# Sum these 1-minute counts into 3-minute totals per cmdb_id
+span_counts_3min = span_counts.rolling(window=3, min_periods=1).sum()
+
+# Check for sharp drops in span counts
+anomalies = []
+for cmdb_id in span_counts_3min.columns:
+    previous_count = None
+    for timestamp, count in span_counts_3min[cmdb_id].iteritems():
+        if previous_count is not None and previous_count > 0:
+            drop_ratio = (previous_count - count) / previous_count
+            if drop_ratio > 0.50:
+                anomalies.append({
+                    'data_source': 'Trace',
+                    'timestamp': timestamp,
+                    'cmdb_id': cmdb_id,
+                    'description': f"Span count drop is abnormally high, drop_ratio={drop_ratio:.2f}"
+                })
+        previous_count = count
+
+# Filter anomalies to only include those within the original diagnostic window
+anomalies = [anomaly for anomaly in anomalies if start_time <= anomaly['timestamp'] < end_time]
+
+# Convert anomalies to DataFrame for better visualization
+anomalies_df = pd.DataFrame(anomalies)
+
+# Print and save the anomalies
+print(anomalies_df.to_string(index=False))
+anomalies_df.to_csv('trace_anomalies.csv', index=False)

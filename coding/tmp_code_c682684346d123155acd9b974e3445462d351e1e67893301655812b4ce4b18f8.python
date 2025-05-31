@@ -1,0 +1,35 @@
+import pandas as pd
+import os
+from datetime import datetime
+import pytz
+
+# Define the path to the log file
+log_file_path = './dataset/Bank/telemetry/2021_03_10/log/log_service.csv'
+
+# Load the log data
+log_data = pd.read_csv(log_file_path)
+
+# Convert the timestamp to datetime and set timezone to Asia/Shanghai
+log_data['datetime'] = pd.to_datetime(log_data['timestamp'], unit='s', utc=True)
+log_data['datetime'] = log_data['datetime'].dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+
+# Define the time frame for analysis
+start_time = datetime(2021, 3, 10, 15, 0)
+end_time = datetime(2021, 3, 10, 15, 30)
+
+# Filter logs within the specified time frame
+filtered_logs = log_data[(log_data['datetime'] >= start_time) & (log_data['datetime'] < end_time)]
+
+# Identify error messages or warnings related to potential root cause components
+# Assuming error messages or warnings contain keywords like 'error', 'fail', 'warn'
+error_keywords = ['error', 'fail', 'warn']
+filtered_logs['is_error'] = filtered_logs['value'].str.contains('|'.join(error_keywords), case=False, na=False)
+
+# Filter logs that are identified as errors or warnings
+error_logs = filtered_logs[filtered_logs['is_error']]
+
+# Display the error logs
+print(error_logs.to_string(index=False))
+
+# Save the error logs to a CSV file
+error_logs.to_csv('error_logs_2021_03_10_15_00_to_15_30.csv', index=False)

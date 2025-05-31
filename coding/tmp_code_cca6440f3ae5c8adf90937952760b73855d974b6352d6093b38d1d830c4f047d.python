@@ -1,0 +1,102 @@
+import pandas as pd
+import numpy as np
+import os
+from datetime import datetime, timedelta
+import pytz
+
+# Define the timezone
+timezone = pytz.timezone('Asia/Shanghai')
+
+# Define the path to the telemetry data
+base_path = './dataset/Bank/telemetry/2021_03_10/metric/'
+
+# Load the metric_container.csv file
+metric_container_path = os.path.join(base_path, 'metric_container.csv')
+metric_container_df = pd.read_csv(metric_container_path)
+
+# Convert the timestamp to datetime
+metric_container_df['datetime'] = pd.to_datetime(metric_container_df['timestamp'], unit='s', utc=True)
+metric_container_df['datetime'] = metric_container_df['datetime'].dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+
+# Filter the data for the specified time frame
+start_time = datetime(2021, 3, 10, 15, 0)
+end_time = datetime(2021, 3, 10, 15, 30)
+filtered_df = metric_container_df[(metric_container_df['datetime'] >= start_time) & (metric_container_df['datetime'] <= end_time)]
+
+# Define the KPIs to analyze
+kpis_to_analyze = [
+    'OSLinux-CPU_CPU_CPUCpuUtil', 'OSLinux-CPU_CPU_CPUUserTime',
+    'OSLinux-OSLinux_MEMORY_MEMORY_NoCacheMemPerc', 'OSLinux-OSLinux_MEMORY_MEMORY_MEMUsedMemPerc', 'OSLinux-OSLinux_MEMORY_MEMORY_MEMFreeMem',
+    'OSLinux-OSLinux_NETWORK_NETWORK_TCP-FIN-WAIT', 'OSLinux-OSLinux_NETWORK_NETWORK_TotalTcpConnNum',
+    'OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdb_DSKReadWrite',
+    'OSLinux-OSLinux_FILESYSTEM_-tomcat_FSCapacity', 'OSLinux-OSLinux_FILESYSTEM_-apache_FSCapacity',
+    'JVM-Operating System_7779_JVM_JVM_CPULoad', 'JVM-Operating System_7778_JVM_JVM_CPULoad',
+    'JVM-Memory_7778_JVM_Memory_NoHeapMemoryUsed', 'JVM-Memory_7779_JVM_Memory_NoHeapMemoryUsed'
+]
+
+# Filter the data for the specified KPIs
+filtered_kpi_df = filtered_df[filtered_df['kpi_name'].isin(kpis_to_analyze)]
+
+# Extend the time window by 15 minutes before and after
+extended_start_time = start_time - timedelta(minutes=15)
+extended_end_time = end_time + timedelta(minutes=15)
+extended_df = metric_container_df[(metric_container_df['datetime'] >= extended_start_time) & (metric_container_df['datetime'] <= extended_end_time)]
+extended_kpi_df = extended_df[extended_df['kpi_name'].isin(kpis_to_analyze)]
+
+# Normalize the values for each KPI
+anomaly_events = []
+for kpi in kpis_to_analyze:
+    kpi_df = extended_kpi_df[extended_kpi_df['kpi_name'] == kpi]
+    if kpi_df.empty:
+        continue
+    
+    # Find global min and max for normalization
+    global_min = kpi_df['value'].min()
+    global_max = kpi_df['value'].max()
+    
+    # Normalize the values
+    kpi_df['normalized_value'] = (kpi_df['value'] - global_min) / (global_max - global_min) * 100
+    
+    # Analyze each component for anomalies
+    components = kpi_df['cmdb_id'].unique()
+    for component in components:
+        component_df = kpi_df[kpi_df['cmdb_id'] == component]
+        
+        # Sort by normalized value in descending order
+        component_df = component_df.sort_values(by='normalized_value', ascending=False)
+        
+        # Detect anomalies
+        stable_phase_length = 5
+        anomaly_phase_max_length = 8
+        recovery_phase_length = 5
+        
+        for i in range(len(component_df) - stable_phase_length - anomaly_phase_max_length - recovery_phase_length):
+            stable_phase = component_df.iloc[i:i+stable_phase_length]
+            anomaly_phase = component_df.iloc[i+stable_phase_length:i+stable_phase_length+anomaly_phase_max_length]
+            recovery_phase = component_df.iloc[i+stable_phase_length+anomaly_phase_max_length:i+stable_phase_length+anomaly_phase_max_length+recovery_phase_length]
+            
+            stable_mean = stable_phase['normalized_value'].mean()
+            anomaly_max = anomaly_phase['normalized_value'].max()
+            recovery_mean = recovery_phase['normalized_value'].mean()
+            
+            if anomaly_max > stable_mean + 10 and anomaly_max > recovery_mean + 10:
+                anomaly_start_time = anomaly_phase.iloc[0]['datetime']
+                delta = anomaly_max - stable_mean
+                anomaly_event = {
+                    'data_source': "Metric",
+                    'timestamp': anomaly_start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'cmdb_id': component,
+                    'description': f"{kpi} is abnormally high, delta={delta:.2f}"
+                }
+                anomaly_events.append(anomaly_event)
+                break
+
+# Sort anomalies by delta in descending order
+anomaly_events = sorted(anomaly_events, key=lambda x: x['description'].split('=')[-1], reverse=True)
+
+# Save the results to a CSV file
+anomalies_df = pd.DataFrame(anomaly_events)
+anomalies_df.to_csv('anomaly_events.csv', index=False)
+
+# Print the results
+print("anomaly_events =", anomaly_events)

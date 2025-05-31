@@ -1,0 +1,99 @@
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+import pytz
+
+# Load the data
+metric_container_path = './dataset/Bank/telemetry/2021_03_10/metric/metric_container.csv'
+metric_app_path = './dataset/Bank/telemetry/2021_03_10/metric/metric_app.csv'
+
+metric_container_df = pd.read_csv(metric_container_path)
+metric_app_df = pd.read_csv(metric_app_path)
+
+# Convert timestamps to datetime
+metric_container_df['datetime'] = pd.to_datetime(metric_container_df['timestamp'], unit='s', utc=True)
+metric_container_df['datetime'] = metric_container_df['datetime'].dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+
+metric_app_df['datetime'] = pd.to_datetime(metric_app_df['timestamp'], unit='s', utc=True)
+metric_app_df['datetime'] = metric_app_df['datetime'].dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+
+# Define the diagnosis window
+start_time = datetime(2021, 3, 10, 15, 0, 0)
+end_time = datetime(2021, 3, 10, 15, 30, 0)
+
+# Extend the window by 15 minutes before and after
+extended_start_time = start_time - timedelta(minutes=15)
+extended_end_time = end_time + timedelta(minutes=15)
+
+# Filter data within the extended time window
+metric_container_df = metric_container_df[(metric_container_df['datetime'] >= extended_start_time) & (metric_container_df['datetime'] <= extended_end_time)]
+metric_app_df = metric_app_df[(metric_app_df['datetime'] >= extended_start_time) & (metric_app_df['datetime'] <= extended_end_time)]
+
+# Normalize the metric_container data
+def normalize(df, kpi_name):
+    kpi_df = df[df['kpi_name'] == kpi_name]
+    min_val = kpi_df['value'].min()
+    max_val = kpi_df['value'].max()
+    kpi_df['normalized_value'] = (kpi_df['value'] - min_val) / (max_val - min_val) * 100
+    return kpi_df
+
+# Define KPIs to analyze
+kpis = [
+    'OSLinux-CPU_CPU_CPUCpuUtil', 'OSLinux-CPU_CPU_CPUUserTime',
+    'OSLinux-OSLinux_MEMORY_MEMORY_NoCacheMemPerc', 'OSLinux-OSLinux_MEMORY_MEMORY_MEMUsedMemPerc', 'OSLinux-OSLinux_MEMORY_MEMORY_MEMFreeMem',
+    'OSLinux-OSLinux_NETWORK_NETWORK_TCP-FIN-WAIT', 'OSLinux-OSLinux_NETWORK_NETWORK_TotalTcpConnNum',
+    'OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdb_DSKReadWrite',
+    'OSLinux-OSLinux_FILESYSTEM_-tomcat_FSCapacity', 'OSLinux-OSLinux_FILESYSTEM_-apache_FSCapacity',
+    'JVM-Operating System_7779_JVM_JVM_CPULoad', 'JVM-Operating System_7778_JVM_JVM_CPULoad',
+    'JVM-Memory_7778_JVM_Memory_NoHeapMemoryUsed', 'JVM-Memory_7779_JVM_Memory_NoHeapMemoryUsed'
+]
+
+# Normalize and analyze each KPI
+anomaly_events = []
+
+for kpi in kpis:
+    kpi_df = normalize(metric_container_df, kpi)
+    
+    # Analyze each component
+    for cmdb_id, group in kpi_df.groupby('cmdb_id'):
+        # Sort by normalized value descending
+        group = group.sort_values(by='normalized_value', ascending=False)
+        
+        # Detect anomalies
+        for i in range(len(group) - 1):
+            if i < 5 or i > len(group) - 6:
+                continue
+            
+            stable_before = group.iloc[i-5:i]['normalized_value'].mean()
+            anomaly_value = group.iloc[i]['normalized_value']
+            stable_after = group.iloc[i+1:i+6]['normalized_value'].mean()
+            
+            if anomaly_value > stable_before + 20 and anomaly_value > stable_after + 20:
+                delta = anomaly_value - stable_before
+                anomaly_start_time = group.iloc[i]['datetime']
+                
+                anomaly_event = {
+                    'data_source': "Metric",
+                    'timestamp': anomaly_start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'cmdb_id': cmdb_id,
+                    'description': f"{kpi} is abnormally high, delta={delta:.2f}"
+                }
+                anomaly_events.append(anomaly_event)
+
+# Sort anomalies by delta
+anomaly_events = sorted(anomaly_events, key=lambda x: x['description'].split('=')[-1], reverse=True)
+
+# Filter out noise
+if anomaly_events:
+    max_delta = float(anomaly_events[0]['description'].split('=')[-1])
+    threshold = 0.2 * max_delta
+    anomaly_events = [event for event in anomaly_events if float(event['description'].split('=')[-1]) >= threshold]
+
+# Convert to DataFrame for saving
+anomaly_df = pd.DataFrame(anomaly_events)
+
+# Save to CSV
+anomaly_df.to_csv('anomaly_events.csv', index=False)
+
+# Print the results
+print(anomaly_df.to_string(index=False))

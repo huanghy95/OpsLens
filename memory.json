@@ -1,0 +1,62 @@
+{
+    "log": {
+      "fields": ["log_id", "timestamp", "cmdb_id", "log_name", "value"],
+      "metadata_description": {
+        "log_id": "Global unique log identifier",
+        "log_name": "Log name, e.g. log_haproxy",
+        "cmdb_id": "Object identifier where the log is located, including Tomcat01-04,Redis01-02,IG01-IG02,MG01-MG02,dockerA1-dockerA2,dockerB1-dockerB2,Mysql01-Mysql02,Apache01-Apache02"
+      }
+    },
+    
+    "trace": {
+      "fields": ["timestamp", "cmdb_id", "parent_id", "span_id", "trace_id", "duration"],
+      "metadata_description": {
+        "cmdb_id": "Object identifier where the metric is located, including Tomcat01-04,Redis01-02,IG01-IG02,MG01-MG02,dockerA1-dockerA2,dockerB1-dockerB2,Mysql01-Mysql02,Apache01-Apache02",
+        "parent_id": "Call chain parent node id",
+        "span_id": "Current process span id",
+        "trace_id": "Global id",
+        "duration": "Processing time in milliseconds"
+      }
+    },
+    
+    "metric": {
+      "metric_app": {
+        "fields": ["timestamp", "rr", "sr", "cnt", "mrt", "tc"],
+        "metadata_description": {
+          "rr": "System response rate (0-100%)",
+          "sr": "Business success rate (0-100%)",
+          "cnt": "Transaction volume (integer)",
+          "mrt": "Average response time (milliseconds)",
+          "tc": "Transaction code, e.g. ServiceTest1"
+        },
+        "anomaly_threshold": "Any dimension deviates from baseline value >30% for 3 minutes"
+      },
+      
+      "matric_container": {
+        "fields": ["timestamp", "cmdb_id", "kpi_name", "value"],
+        "metadata_description": {
+            "cmdb_id": "Object identifier where the metric is located, including Tomcat01-04,Redis01-02,IG01-IG02,MG01-MG02,dockerA1-dockerA2,dockerB1-dockerB2,Mysql01-Mysql02,Apache01-Apache02",
+            "kpi_name": "Metric name, such as CPU utilization, cpu_idle, etc.",
+            "value": "Metric value"
+        }
+      },
+      "metric_priority": "CPU<Network<Memory<Disk"
+    },
+    "planer": {
+      "advice": "1. First use metric_explorer agent to perform coarse-grained anomaly detection on metric_app to determine the approximate time period; 2. Then let metric_explorer agent perform anomaly detection on metric_container during this time period to determine which cmdb_id has issues; 3. Finally, check the logs and traces for this cmdb_id during this time period to determine the root cause type"
+    },
+    "investigator": {
+      "advice": "1. First check metric_app anomalies to determine the approximate time period; 2. Then check metric_container anomalies during this time period to determine which cmdb_id has issues; 3. Finally, check the logs and traces for this cmdb_id during this time period to determine the root cause type"
+    },
+    "reasoner": {
+        "system_topology": "\ngraph TD\nsubgraph apache[Apache]\n  Apache01 \n  Apache02 \nend\n\nsubgraph IG\n  IG01\n  IG02\nend\n\nsubgraph Tomcat\n  Tomcat01\n  Tomcat02\n  Tomcat03\n  Tomcat04\nend\n\nsubgraph MG\n  MG01\n  MG02\nend\n\nsubgraph docker\n  docker01\n  docker02\n  docker03\nend\n\nF5_1[F5 Load Balancer] -->apache\napache --> F5_2[F5]\n\nF5_2 --> IG\nIG -->Tomcat01\nIG -->Tomcat02\nIG -->Tomcat03\nIG -->Tomcat04\n\nTomcat --> F5_3[F5]\nTomcat --> Redis01[Redis01]\nTomcat --> Redis02[Redis02]\n\nF5_3[F5] --> MG\n\nMG --> docker01\nMG --> docker02\nMG --> docker03\n\ndocker --> Redis03[Redis01]\ndocker --> Redis04[Redis01]\n",
+        "system_topology_priority": "CPU<Network<Memory<Disk"
+      },
+    "coder": {
+      "data_description": {
+        "log": ["log_id", "timestamp", "cmdb_id", "log_name", "value"],
+        "trace": ["timestamp", "cmdb_id", "parent_id", "span_id", "trace_id", "duration"],
+        "metric": ["timestamp", "cmdb_id", "kpi_name", "value"]
+      }
+    }
+}

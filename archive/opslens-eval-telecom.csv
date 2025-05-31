@@ -1,0 +1,905 @@
+row_id,task_index,instruction,prediction,groundtruth,passed,failed,score,is_top1_match,is_top3_match,is_top1_partial,is_top3_partial
+0,task_2,"During the specified time range of April 11, 2020, from 00:00 to 00:30, there was one failure reported. The exact reason for this failure is currently unknown. Your task is to identify the root cause reason for the failure during this period.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-04-11 00:08:06"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_003
+timestamp: 1586534700
+datetime: 2020-04-11 00:05:00",CPU fault,,1.0,True,True,True,True
+1,task_4,"Within the time range of April 11, 2020, from 01:30 to 02:00, there was one failure in the system. The exact time of the root cause occurrence and the reason behind this failure are currently unknown. You are required to identify the root cause occurrence datetime and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-04-11 01:42:00"",
+        ""root cause component"": ""docker_004"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_004
+timestamp: 1586540400
+datetime: 2020-04-11 01:40:00","CPU fault
+2020-04-11 01:40:00",,1.0,True,True,True,True
+2,task_2,"On April 11, 2020, between 02:00 and 02:30, a failure occurred in the system. The number of failures recorded within this time range is 1. The reason for the root cause of this failure is currently unknown and needs to be determined.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-04-11 02:15:23"",
+        ""root cause component"": ""db_007"",
+        ""root cause reason"": ""db connection limit""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-04-11 02:29:23"",
+        ""root cause component"": ""db_004"",
+        ""root cause reason"": ""db connection limit""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-04-11 02:21:37"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: service
+reason: db connection limit
+component: db_007
+timestamp: 1586542500
+datetime: 2020-04-11 02:15:00",db connection limit,,1.0,True,True,True,True
+3,task_2,"A single failure was detected during the time range of April 11, 2020, from 02:30 to 03:00. The specific reason for this failure is currently unknown. Your task is to determine the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-04-11 02:53:22"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_002
+timestamp: 1586544600
+datetime: 2020-04-11 02:50:00",CPU fault,,1.0,True,True,True,True
+4,task_7,"On April 11, 2020, between 04:30 and 05:00, there was a reported failure in the system. The exact time of the root cause occurrence, the affected component, and the underlying reason for this failure are currently unknown. You are tasked with identifying the root cause occurrence datetime, the root cause component, and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-04-11 04:42:36"",
+        ""root cause component"": ""docker_008"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-04-11 04:43:28"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_008
+timestamp: 1586551200
+datetime: 2020-04-11 04:40:00","docker_008
+CPU fault
+2020-04-11 04:40:00",,1.0,True,True,True,True
+5,task_1,"Within the specified time range of April 11, 2020, from 05:30 to 06:00, a failure was detected in the system. The precise time at which the root cause of the failure occurred is currently unknown. Please determine the exact root cause occurrence datetime to assist in diagnosing the issue.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-04-11 05:45:23"",
+        ""root cause component"": ""db_003"",
+        ""root cause reason"": ""db close""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-04-11 05:43:11"",
+        ""root cause component"": ""docker_006"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: service
+reason: db close
+component: db_003
+timestamp: 1586555100
+datetime: 2020-04-11 05:45:00",2020-04-11 05:45:00,,1.0,True,True,True,True
+6,task_4,"There was a single failure in the system within the time range of May 22, 2020, from 00:00 to 00:30. The precise time when the root cause of the failure occurred is unknown, and the reason behind the failure also remains unidentified. You are tasked with determining the exact root cause occurrence time and the underlying reason for the failure.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-22 00:07:37"",
+        ""root cause component"": ""db_003"",
+        ""root cause reason"": ""db close""
+    }
+}","level: service
+reason: db close
+component: db_003
+timestamp: 1590077220
+datetime: 2020-05-22 00:07:00","db close
+2020-05-22 00:07:00",,1.0,True,True,True,True
+7,task_7,"During the specified time range of May 22, 2020, from 00:30 to 01:00, the system experienced a single failure. The exact time of occurrence, affected component, and the underlying reason for this failure are currently unknown. Please pinpoint the root cause occurrence datetime, the root cause component, and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-22 00:52:59"",
+        ""root cause component"": ""os_021"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-22 00:57:43"",
+        ""root cause component"": ""docker_001"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_001
+timestamp: 1590079680
+datetime: 2020-05-22 00:48:00","docker_001
+CPU fault",2020-05-22 00:48:00,0.67,False,False,True,True
+8,task_5,"During the time range of May 22, 2020, from 01:30 to 02:00, there was one failure reported. The exact time of the root cause occurrence and the affected component are currently unknown. Please identify the root cause occurrence datetime and the root cause component.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-22 01:51:43"",
+        ""root cause component"": ""os_018"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-22 01:51:43"",
+        ""root cause component"": ""os_018"",
+        ""root cause reason"": ""network loss""
+    }
+}","level: node
+reason: network delay
+component: os_018
+timestamp: 1590083280
+datetime: 2020-05-22 01:48:00","os_018
+2020-05-22 01:48:00",,1.0,True,True,True,True
+9,task_1,"On May 22, 2020, between 02:00 and 02:30, the system encountered a failure. The exact time of the root cause occurrence is currently unknown. Please determine the root cause occurrence datetime.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-22 02:19:00"",
+        ""root cause component"": ""os_020"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-22 02:19:00"",
+        ""root cause component"": ""os_020"",
+        ""root cause reason"": ""network loss""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_005
+timestamp: 1590085080
+datetime: 2020-05-22 02:18:00",2020-05-22 02:18:00,,1.0,True,True,True,True
+10,task_1,"During the specified time range of May 23, 2020, from 00:00 to 00:30, the system experienced a failure. The exact time of the root cause occurrence is unknown, complicating the diagnosis process. Please pinpoint the root cause occurrence datetime.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-23 00:06:12"",
+        ""root cause component"": ""docker_006"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_004
+timestamp: 1590163500
+datetime: 2020-05-23 00:05:00",2020-05-23 00:05:00,,1.0,True,True,True,True
+11,task_6,"During the specified time range of May 23, 2020, from 00:30 to 01:00, the system experienced one failure. The exact component affected and the reason for this failure are unknown. Please identify the root cause component and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-23 00:42:00"",
+        ""root cause component"": ""os_001"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-23 00:42:00"",
+        ""root cause component"": ""os_002"",
+        ""root cause reason"": ""network loss""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-23 00:42:00"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: service
+reason: db connection limit
+component: db_003
+timestamp: 1590165600
+datetime: 2020-05-23 00:40:00",,"db_003
+db connection limit",0.0,False,False,False,False
+12,task_7,"There was one failure reported within the specified time range of May 23, 2020, from 01:00 to 01:30. The component responsible for the failure, the exact time of the root cause occurrence, and the underlying reason for this failure are currently unknown. Please identify the root cause component, the root cause occurrence datetime, and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-23 01:17:00"",
+        ""root cause component"": ""os_001"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-23 01:19:00"",
+        ""root cause component"": ""os_001"",
+        ""root cause reason"": ""network loss""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-23 01:17:00"",
+        ""root cause component"": ""os_001"",
+        ""root cause reason"": ""db connection limit""
+    }
+}","level: node
+reason: network loss
+component: os_021
+timestamp: 1590167760
+datetime: 2020-05-23 01:16:00","network loss
+2020-05-23 01:16:00",os_021,0.67,False,False,True,True
+13,task_1,"Within the specified time range of May 23, 2020, from 01:30 to 02:00, there was one failure. The exact time of the root cause occurrence is unknown, creating a challenge for failure diagnosis. Please identify the root cause occurrence datetime.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-23 01:35:58"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-23 01:40:59"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-23 01:55:20"",
+        ""root cause component"": ""os_009"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network loss
+component: os_009
+timestamp: 1590169920
+datetime: 2020-05-23 01:52:00",2020-05-23 01:52:00,,1.0,False,True,False,True
+14,task_1,"On May 23, 2020, between 03:30 and 04:00, there was a single failure observed in the system. The exact time when the root cause occurred is currently unknown. Please investigate and determine the root cause occurrence datetime.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-23 03:39:00"",
+        ""root cause component"": ""os_001"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-23 03:39:00"",
+        ""root cause component"": ""os_002"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-23 03:39:00"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network delay
+component: os_021
+timestamp: 1590176160
+datetime: 2020-05-23 03:36:00",2020-05-23 03:36:00,,1.0,True,True,True,True
+15,task_7,"Within the time range of May 23, 2020, from 04:30 to 05:00, there was one failure reported. The component responsible for this failure, the exact time of occurrence, and the underlying reason are currently unknown. You are tasked with identifying the root cause occurrence datetime, the root cause component, and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-23 04:49:50"",
+        ""root cause component"": ""docker_006"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-23 04:57:51"",
+        ""root cause component"": ""os_005"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-23 04:49:00"",
+        ""root cause component"": ""osb_001"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_006
+timestamp: 1590180420
+datetime: 2020-05-23 04:47:00","docker_006
+CPU fault
+2020-05-23 04:47:00",,1.0,True,True,True,True
+16,task_7,"During the specified time range of May 24, 2020, from 01:30 to 02:00, the system experienced a failure. The exact time of the root cause occurrence, the affected component, and the underlying reason for this failure are currently unknown. You are tasked with identifying the root cause occurrence datetime, the root cause component, and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-23 17:47:27"",
+        ""root cause component"": ""db_007"",
+        ""root cause reason"": ""db close""
+    }
+}","level: service
+reason: db close
+component: db_007
+timestamp: 1590256020
+datetime: 2020-05-24 01:47:00","db_007
+db close",2020-05-24 01:47:00,0.67,False,False,True,True
+17,task_2,"A failure occurred during the time range of May 24, 2020, from 03:00 to 03:30. The specific reason for this failure is currently unknown, and further diagnosis is required. Please identify the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-24 03:16:01"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-24 03:21:00"",
+        ""root cause component"": ""docker_004"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_003
+timestamp: 1590261420
+datetime: 2020-05-24 03:17:00",CPU fault,,1.0,True,True,True,True
+18,task_2,"Within the specified time range of May 24, 2020, from 04:00 to 04:30, there was a single failure detected in the system. The specific reason behind this failure is currently unknown. Your task is to determine the root cause reason for this failure.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-24 04:20:47"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-24 04:20:59"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-24 04:29:27"",
+        ""root cause component"": ""db_004"",
+        ""root cause reason"": ""db connection limit""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_006
+timestamp: 1590265020
+datetime: 2020-05-24 04:17:00",CPU fault,,1.0,True,True,True,True
+19,task_4,"On May 25, 2020, between 01:30 and 02:00, a failure occurred within the system. The exact time at which the root cause occurred and the reason for this failure are currently unknown. Please identify the root cause occurrence datetime and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-25 01:47:27"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: node
+reason: network delay
+component: os_020
+timestamp: 1590342420
+datetime: 2020-05-25 01:47:00",2020-05-25 01:47:00,network delay,0.5,False,False,True,True
+20,task_2,"There was a failure that occurred within the specified time range of May 25, 2020, from 03:30 to 04:00. The exact reason for this failure is unknown, complicating the failure diagnosis process. You are tasked with identifying the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-25 03:42:50"",
+        ""root cause component"": ""os_005"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-25 03:54:03"",
+        ""root cause component"": ""docker_001"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-25 03:30:59"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network loss
+component: os_017
+timestamp: 1590349620
+datetime: 2020-05-25 03:47:00",,network loss,0.0,False,False,False,False
+21,task_7,"During the specified time range of May 25, 2020, from 04:30 to 05:00, one failure was detected in the system. However, the exact component involved, the time of occurrence, and the underlying reason for this failure are currently unknown. Please identify the root cause component, the root cause occurrence time, and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-25 04:49:26"",
+        ""root cause component"": ""db_003"",
+        ""root cause reason"": ""db close""
+    }
+}","level: service
+reason: db close
+component: db_003
+timestamp: 1590353220
+datetime: 2020-05-25 04:47:00","db_003
+2020-05-25 04:47:00
+db close",,1,True,True,True,True
+22,task_4,"During the time range of May 26, 2020, from 02:00 to 02:30, the system experienced one failure. The exact time when the root cause occurred and the reason for this failure are currently unknown. Please identify the root cause occurrence datetime and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-26 02:09:07"",
+        ""root cause component"": ""os_004"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-26 02:17:51"",
+        ""root cause component"": ""os_005"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-26 02:29:33"",
+        ""root cause component"": ""db_004"",
+        ""root cause reason"": ""db connection limit""
+    }
+}","level: service
+reason: db connection limit
+component: db_007
+timestamp: 1590430140
+datetime: 2020-05-26 02:09:00",2020-05-26 02:09:00,db connection limit,0.5,False,False,True,True
+23,task_1,"During the specified time range of May 26, 2020, from 02:30 to 03:00, there was one failure observed in the system. The exact time of the root cause occurrence is unknown. Please determine the root cause occurrence datetime.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-26 02:39:31"",
+        ""root cause component"": ""db_003"",
+        ""root cause reason"": ""db connection limit""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-26 02:37:22"",
+        ""root cause component"": ""db_006"",
+        ""root cause reason"": ""db connection limit""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-26 02:37:22"",
+        ""root cause component"": ""db_010"",
+        ""root cause reason"": ""db connection limit""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_008
+timestamp: 1590431940
+datetime: 2020-05-26 02:39:00",2020-05-26 02:39:00,,1.0,True,True,True,True
+24,task_2,"There was a single system failure during the specified time range of May 26, 2020, from 03:00 to 03:30. The root cause of this failure remains unknown. Identifying the underlying reason for this failure is necessary to proceed with troubleshooting.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-26 03:13:03"",
+        ""root cause component"": ""os_021"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-26 03:13:03"",
+        ""root cause component"": ""os_021"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-26 03:13:03"",
+        ""root cause component"": ""os_021"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network delay
+component: os_021
+timestamp: 1590433740
+datetime: 2020-05-26 03:09:00",network delay,,1.0,True,True,True,True
+25,task_4,"During the time range of May 26, 2020, from 03:30 to 04:00, the system experienced a failure. The exact occurrence time and reason behind the root cause of this failure are unknown, which hinders the troubleshooting process. Your task is to identify the root cause occurrence datetime and the reason behind the failure.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-26 03:39:00"",
+        ""root cause component"": ""os_001"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-26 03:39:00"",
+        ""root cause component"": ""os_002"",
+        ""root cause reason"": ""network loss""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-26 03:39:00"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network loss
+component: os_018
+timestamp: 1590435540
+datetime: 2020-05-26 03:39:00","network loss
+2020-05-26 03:39:00",,1.0,False,True,True,True
+26,task_3,"During the specified time range of May 26, 2020, from 04:00 to 04:30, the system experienced a failure. The root cause component responsible for this failure is currently unknown. Please identify the root cause component.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-26 04:12:31"",
+        ""root cause component"": ""docker_004"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: node
+reason: network delay
+component: os_020
+timestamp: 1590437700
+datetime: 2020-05-26 04:15:00",,os_020,0.0,False,False,False,False
+27,task_7,"During the specified time range of May 26, 2020, from 04:30 to 05:00, a single failure occurred. The exact time of the root cause occurrence, the affected component, and the underlying reason for this failure are currently unknown. You are tasked with identifying the root cause occurrence datetime, the root cause component, and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-26 04:49:00"",
+        ""root cause component"": ""docker_001"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-26 04:49:00"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-26 04:49:00"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: node
+reason: network delay
+component: os_001
+timestamp: 1590439500
+datetime: 2020-05-26 04:45:00",2020-05-26 04:45:00,"network delay
+os_001",0.33,False,False,True,True
+28,task_7,"Within the specified time range of May 26, 2020, from 05:00 to 05:30, there was a single failure detected in the system. However, the details about the root cause component, the exact time of the root cause occurrence, and the underlying reason for the failure are currently unknown. You need to identify the root cause component, the occurrence time, and the reason for this failure.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-26 05:16:11"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-26 05:18:53"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_002
+timestamp: 1590441300
+datetime: 2020-05-26 05:15:00","docker_002
+CPU fault
+2020-05-26 05:15:00",,1.0,True,True,True,True
+29,task_4,"A single failure was detected within the given time range of May 27, 2020, from 00:00 to 00:30. The specific time of the root cause occurrence and the underlying reason for this failure are currently unknown. Your task is to determine the root cause occurrence datetime and identify the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-27 00:24:16"",
+        ""root cause component"": ""os_018"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-27 00:24:17"",
+        ""root cause component"": ""os_018"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-27 00:24:40"",
+        ""root cause component"": ""os_018"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network delay
+component: os_018
+timestamp: 1590510180
+datetime: 2020-05-27 00:23:00","network delay
+2020-05-27 00:23:00",,1.0,True,True,True,True
+30,task_3,"There was one failure within the specified time range of May 27, 2020, from 00:30 to 01:00. The exact component responsible for this failure is currently unknown. Please identify the root cause component.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-27 00:52:50"",
+        ""root cause component"": ""os_005"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-27 00:52:50"",
+        ""root cause component"": ""os_005"",
+        ""root cause reason"": ""network loss""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-27 00:54:00"",
+        ""root cause component"": ""osb_001"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network delay
+component: os_017
+timestamp: 1590511980
+datetime: 2020-05-27 00:53:00",,os_017,0.0,False,False,False,False
+31,task_4,"During the specified time range of May 27, 2020, from 01:00 to 01:30, there was a failure reported in the system. The exact occurrence time of the root cause and the underlying reason for the failure are currently unknown. Please identify the root cause occurrence datetime and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-27 01:26:00"",
+        ""root cause component"": ""os_004"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_006
+timestamp: 1590513780
+datetime: 2020-05-27 01:23:00",2020-05-27 01:23:00,CPU fault,0.5,False,False,True,True
+32,task_6,"During the specified time range of May 27, 2020, from 01:30 to 02:00, the system experienced a failure. The exact root cause component and the underlying reason for this failure are currently unknown. Please identify the root cause component and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-27 01:31:39"",
+        ""root cause component"": ""db_006"",
+        ""root cause reason"": ""db connection limit""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-27 01:32:08"",
+        ""root cause component"": ""os_011"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-27 01:32:22"",
+        ""root cause component"": ""os_022"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: service
+reason: db connection limit
+component: db_003
+timestamp: 1590515580
+datetime: 2020-05-27 01:53:00",db connection limit,db_003,0.5,False,False,True,True
+33,task_6,"During the specified time range of May 27, 2020, from 02:00 to 02:30, the system experienced one failure. The exact component where the failure originated and the underlying reason for this failure are currently unknown. You are tasked with identifying the root cause component and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-27 02:00:43"",
+        ""root cause component"": ""os_017"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-27 02:24:38"",
+        ""root cause component"": ""db_007"",
+        ""root cause reason"": ""db close""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-27 02:01:38"",
+        ""root cause component"": ""db_004"",
+        ""root cause reason"": ""db connection limit""
+    }
+}","level: service
+reason: db close
+component: db_007
+timestamp: 1590517380
+datetime: 2020-05-27 02:23:00","db_007
+db close",,1.0,False,True,False,True
+34,task_7,"Within the time range of May 27, 2020, from 02:30 to 03:00, there was one failure detected in the system. The specific component responsible for this failure, the exact occurrence time, and the underlying reason for the failure are all currently unknown. You are tasked with identifying the root cause component, the root cause occurrence datetime, and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-27 02:33:14"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-27 02:33:20"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-27 02:45:59"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: service
+reason: db connection limit
+component: db_007
+timestamp: 1590519180
+datetime: 2020-05-27 02:53:00",,"db_007
+2020-05-27 02:53:00
+db connection limit",0.0,False,False,False,False
+35,task_6,"During the time range of May 27, 2020, from 05:00 to 05:30, a single failure occurred within the system. The specific component responsible for this failure, as well as the underlying reason, are currently unknown. Your task is to identify the root cause component and determine the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-27 05:09:00"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_001
+timestamp: 1590527340
+datetime: 2020-05-27 05:09:00",CPU fault,docker_001,0.5,False,False,True,True
+36,task_4,"There was one failure recorded during the time range of May 27, 2020, from 05:30 to 06:00. The specific time when the root cause occurred and the reason for this failure are currently unknown. You need to identify the root cause occurrence datetime and the root cause reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-27 05:39:00"",
+        ""root cause component"": ""os_001"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-27 05:39:00"",
+        ""root cause component"": ""os_002"",
+        ""root cause reason"": ""network loss""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-27 05:39:00"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network delay
+component: os_021
+timestamp: 1590529140
+datetime: 2020-05-27 05:39:00","network delay
+2020-05-27 05:39:00",,1.0,True,True,True,True
+37,task_2,"During the specified time range of May 28, 2020, from 00:30 to 01:00, the system experienced a single failure. The root cause of this failure, however, is currently unknown. Please identify the reason behind this failure.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-28 00:50:55"",
+        ""root cause component"": ""docker_001"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_001
+timestamp: 1590598020
+datetime: 2020-05-28 00:47:00",CPU fault,,1.0,True,True,True,True
+38,task_2,"Between the time range of May 28, 2020, from 03:30 to 04:00, a failure was detected in the system. The root cause of this failure is currently unknown. Your task is to identify the root cause reason for this failure.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-28 03:51:25"",
+        ""root cause component"": ""os_018"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-28 03:51:50"",
+        ""root cause component"": ""os_018"",
+        ""root cause reason"": ""network loss""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-28 03:46:37"",
+        ""root cause component"": ""os_003"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network loss
+component: os_018
+timestamp: 1590608820
+datetime: 2020-05-28 03:47:00",network loss,,1.0,False,True,False,True
+39,task_3,"During the time range of May 29, 2020, from 02:00 to 02:30, the system experienced a failure. The exact component that caused this failure remains unknown. Please identify the root cause component responsible for this failure.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-29 02:18:31"",
+        ""root cause component"": ""os_013"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-29 02:29:34"",
+        ""root cause component"": ""db_004"",
+        ""root cause reason"": ""db connection limit""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-29 02:25:08"",
+        ""root cause component"": ""docker_004"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: service
+reason: db connection limit
+component: db_003
+timestamp: 1590689460
+datetime: 2020-05-29 02:11:00",,db_003,0.0,False,False,False,False
+40,task_2,"On May 29, 2020, between 02:30 and 03:00, there was one failure reported. The specific reason for this failure is currently unknown. Your task is to identify the root cause reason behind this failure.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-29 02:42:06"",
+        ""root cause component"": ""docker_008"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-29 02:43:08"",
+        ""root cause component"": ""docker_008"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_008
+timestamp: 1590691260
+datetime: 2020-05-29 02:41:00",CPU fault,,1.0,True,True,True,True
+41,task_1,"On May 29, 2020, between 03:30 and 04:00, a failure was identified in the system. However, the exact time when the root cause occurred is unknown. Please determine the root cause occurrence datetime.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-29 03:39:49"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-29 03:40:32"",
+        ""root cause component"": ""docker_001"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-29 03:41:28"",
+        ""root cause component"": ""docker_001"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_001
+timestamp: 1590694860
+datetime: 2020-05-29 03:41:00",2020-05-29 03:41:00,,1.0,True,True,True,True
+42,task_5,"On May 30, 2020, between 00:00 to 00:30, a single failure was observed. However, both the exact time of the root cause occurrence and the component involved in this failure are currently unknown. You are tasked with identifying the root cause occurrence datetime and the root cause component.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-30 00:14:26"",
+        ""root cause component"": ""os_021"",
+        ""root cause reason"": ""network loss""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-30 00:13:51"",
+        ""root cause component"": ""os_002"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-30 00:13:26"",
+        ""root cause component"": ""os_022"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network loss
+component: os_021
+timestamp: 1590768780
+datetime: 2020-05-30 00:13:00","os_021
+2020-05-30 00:13:00",,1.0,True,True,True,True
+43,task_6,"There was a failure within the time range of May 30, 2020, from 02:30 to 03:00. The exact component responsible for the failure and the underlying reason for this failure are currently unknown. Please identify the root cause component and reason.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-30 02:45:23"",
+        ""root cause component"": ""os_009"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network delay
+component: os_009
+timestamp: 1590777780
+datetime: 2020-05-30 02:43:00","os_009
+network delay",,1.0,True,True,True,True
+44,task_5,"Within the time range of May 30, 2020, from 03:30 to 04:00, there was an occurrence of a single system failure. However, the specific time at which the root cause occurred and the component responsible for this failure remain unidentified. Further investigation is needed to determine the root cause occurrence time and the root cause component.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-30 03:44:32"",
+        ""root cause component"": ""os_020"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-30 03:51:01"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-30 03:51:29"",
+        ""root cause component"": ""db_010"",
+        ""root cause reason"": ""db connection limit""
+    }
+}","level: node
+reason: network delay
+component: os_020
+timestamp: 1590781380
+datetime: 2020-05-30 03:43:00","os_020
+2020-05-30 03:43:00",,1.0,True,True,True,True
+45,task_1,"Within the specified time range of May 30, 2020, from 04:00 to 04:30, there was one failure reported. The exact root cause occurrence time is currently unknown. Please identify the root cause occurrence datetime.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-30 04:17:19"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-30 04:19:07"",
+        ""root cause component"": ""os_004"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_002
+timestamp: 1590783180
+datetime: 2020-05-30 04:13:00",2020-05-30 04:13:00,,1.0,True,True,True,True
+46,task_6,"Within the time range of May 30, 2020, from 05:00 to 05:30, the system encountered a single failure. The specific component responsible for this failure and the underlying reason remain unknown. Please identify the root cause component and the reason for this failure.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-30 05:16:48"",
+        ""root cause component"": ""os_021"",
+        ""root cause reason"": ""network loss""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-30 05:16:49"",
+        ""root cause component"": ""os_021"",
+        ""root cause reason"": ""network loss""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-30 05:15:00"",
+        ""root cause component"": ""os_021"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network loss
+component: os_018
+timestamp: 1590786780
+datetime: 2020-05-30 05:13:00",network loss,os_018,0.5,False,False,True,True
+47,task_3,"During the time range of May 31, 2020, from 02:30 to 03:00, the system experienced a single failure. The exact component responsible for this failure is currently unknown. Please identify the component that caused the failure during this period.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-31 02:50:26"",
+        ""root cause component"": ""docker_001"",
+        ""root cause reason"": ""CPU fault""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-31 02:48:00"",
+        ""root cause component"": ""docker_002"",
+        ""root cause reason"": ""network delay""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-31 02:48:00"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""network delay""
+    }
+}","level: node
+reason: network delay
+component: os_021
+timestamp: 1590864420
+datetime: 2020-05-31 02:47:00",,os_021,0.0,False,False,False,False
+48,task_1,"On May 31, 2020, during the time range from 03:00 to 03:30, there was a single failure in the system. The exact time when the root cause occurred is currently unknown. Please identify the root cause occurrence datetime.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-31 03:21:00""
+    }
+}","level: node
+reason: network delay
+component: os_017
+timestamp: 1590866220
+datetime: 2020-05-31 03:17:00",2020-05-31 03:17:00,,1.0,True,True,True,True
+49,task_1,"During the specified time range of May 31, 2020, from 03:30 to 04:00, there was one failure reported. The exact time when the root cause occurred is unknown, making it challenging to diagnose the issue. Please determine the root cause occurrence datetime.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-31 03:48:24"",
+        ""root cause component"": ""db_003"",
+        ""root cause reason"": ""db connection limit""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-31 03:49:04"",
+        ""root cause component"": ""docker_003"",
+        ""root cause reason"": ""CPU fault""
+    }
+}","level: service
+reason: db connection limit
+component: db_003
+timestamp: 1590868020
+datetime: 2020-05-31 03:47:00",2020-05-31 03:47:00,,1.0,True,True,True,True
+50,task_5,"During the specified time range of May 31, 2020, from 04:00 to 04:30, the system experienced a failure. The exact occurrence time and component responsible for the root cause are currently unknown. Please identify the root cause occurrence datetime and the root cause component.","{
+    ""1"": {
+        ""root cause occurrence datetime"": ""2020-05-31 04:21:00"",
+        ""root cause component"": ""os_001"",
+        ""root cause reason"": ""network delay""
+    },
+    ""2"": {
+        ""root cause occurrence datetime"": ""2020-05-31 04:21:00"",
+        ""root cause component"": ""os_002"",
+        ""root cause reason"": ""network loss""
+    },
+    ""3"": {
+        ""root cause occurrence datetime"": ""2020-05-31 04:21:00"",
+        ""root cause component"": ""db_004"",
+        ""root cause reason"": ""db connection limit""
+    }
+}","level: pod
+reason: CPU fault
+component: docker_004
+timestamp: 1590869820
+datetime: 2020-05-31 04:17:00",2020-05-31 04:17:00,docker_004,0.5,False,False,True,True
