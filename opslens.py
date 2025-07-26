@@ -5,33 +5,9 @@ import re
 import json
 import os
 import sys
-from io import StringIO
 import time
 import signal
 import argparse  # Add argparse import
-
-# Define a context manager for capturing standard output
-class CaptureOutput:
-    def __init__(self, file_path=None):
-        self.file_path = file_path
-        self.old_stdout = None
-        self.string_io = None
-        
-    def __enter__(self):
-        self.old_stdout = sys.stdout
-        self.string_io = StringIO()
-        sys.stdout = self.string_io
-        return self.string_io
-        
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        sys.stdout = self.old_stdout
-        content = self.string_io.getvalue()
-        # If file path is specified, write to file
-        if self.file_path:
-            os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
-            with open(self.file_path, 'w', encoding='utf-8') as f:
-                f.write(content)
-        return content
 
 # Add a timeout handler decorator
 def timeout_handler(signum, frame):
@@ -49,14 +25,6 @@ async def opslen_rca(instruction=None, dataset=None, record_idx=None, model=None
     Returns:
         str: Root cause analysis result
     """
-    # Determine output file path
-    # print('Current prompt template type:', os.environ["OPSLENS_PROMPT_TYPE"])
-    output_file = "eval/default.log"
-    if dataset and record_idx is not None:
-        output_dir = f"eval/outputs/{dataset}/{model}"
-        os.makedirs(output_dir, exist_ok=True)
-        output_file = f"{output_dir}/{dataset}_{record_idx}.log"
-    
     # Initialize final_result variable to prevent undefined variable access in exception handling
     final_result = None
     
@@ -65,9 +33,11 @@ async def opslen_rca(instruction=None, dataset=None, record_idx=None, model=None
         signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(1800)  
         
-        # Use context manager to capture output
-        with CaptureOutput(output_file) as captured_output:
+        # Direct output to terminal without capturing
+        print("[DEBUG] Starting workflow creation...")
+        try:
             async with await DiagnosisWorkflow.create() as workflow:
+                print("[DEBUG] Workflow created successfully")
                 # If no instruction is provided, use default instruction
                 if instruction is None:
                     user_query = "On March 10, 2021, between 15:00 and 15:30, two system failures were encountered. The components responsible for these failures and the reasons behind them are not yet known. Please identify the root cause components and the root cause reasons."
@@ -79,7 +49,7 @@ async def opslen_rca(instruction=None, dataset=None, record_idx=None, model=None
                 
                 print(f"[Execution Start] Processing instruction: {user_query}")
                 print(f"[Dataset: {dataset}, Record Index: {record_idx}]")
-                print(f"[Timeout limit set: 15 minutes]")
+                print(f"[Timeout limit set: 30 minutes]")
                 
                 try:
                     start_time = time.time()
@@ -102,11 +72,18 @@ async def opslen_rca(instruction=None, dataset=None, record_idx=None, model=None
                     print(final_result)
                     print("--------------------------------Final Result--------------------------------")
                 except Exception as inner_e:
-                    print(f"Error during diagnosis execution: {str(inner_e)}")
-                    print(f"Error type: {type(inner_e).__name__}")
+                    print(f"[ERROR] Error during diagnosis execution: {str(inner_e)}")
+                    print(f"[ERROR] Error type: {type(inner_e).__name__}")
                     import traceback
-                    print(f"Error details:\n{traceback.format_exc()}")
+                    print(f"[ERROR] Full traceback:")
+                    traceback.print_exc()
                     final_result = None
+        except Exception as workflow_e:
+            print(f"[ERROR] Error during workflow creation: {str(workflow_e)}")
+            print(f"[ERROR] Error type: {type(workflow_e).__name__}")
+            import traceback
+            traceback.print_exc()
+            final_result = None
         
         # Disable timeout alarm
         signal.alarm(0)
@@ -130,13 +107,14 @@ async def opslen_rca(instruction=None, dataset=None, record_idx=None, model=None
         # Ensure timeout alarm is disabled
         signal.alarm(0)
         
-        print(f"Error during diagnosis process: {str(e)}")
-        print(f"Error type: {type(e).__name__}")
+        print(f"[ERROR] Error during diagnosis process: {str(e)}")
+        print(f"[ERROR] Error type: {type(e).__name__}")
         import traceback
-        print(f"Error details:\n{traceback.format_exc()}")
+        print(f"[ERROR] Full traceback:")
+        traceback.print_exc()
         # Return a static prediction result
         static_result = get_static_prediction()
-        print(f"Returning static prediction result: {static_result}")
+        print(f"[FALLBACK] Returning static prediction result: {static_result}")
         return static_result
 
 def get_static_prediction():

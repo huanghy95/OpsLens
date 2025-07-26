@@ -141,11 +141,11 @@ background = f"""## TELEMETRY DIRECTORY STRUCTURE:
 
 - You can access the telemetry directory in our microservices system: `./dataset/Bank/telemetry/`.
 
-- This directory contains subdirectories organized by a date (e.g., `./dataset/Bank/telemetry/2021_03_05/`). 
+- This directory contains subdirectories organized by a date (e.g., `./dataset/Bank/telemetry/2021_03_04/`). 
 
-- Within each date-specific directory, you’ll find these subdirectories: `metric`, `trace`, and `log` (e.g., `./dataset/Bank/telemetry/2021_03_05/metric/`).
+- Within each date-specific directory, you’ll find these subdirectories: `metric`, `trace`, and `log` (e.g., `./dataset/Bank/telemetry/2021_03_04/metric/`).
 
-- The telemetry data in those subdirectories is stored in CSV format (e.g., `./dataset/Bank/telemetry/2021_03_05/metric/metric_container.csv`).
+- The telemetry data in those subdirectories is stored in CSV format (e.g., `./dataset/Bank/telemetry/2021_03_04/metric/metric_container.csv`).
 
 
 ## DATA SCHEMA
@@ -233,15 +233,6 @@ There is some domain knowledge for you:
 {background}
 
 {workflow}
-
-
-Solve the issue step-by-step. In each step, your response should follow the JSON format below:
-
-{{
-    
-    "instruction": (Your instruction for the Executor to perform via code execution in the next step. Do not involve complex multi-step instruction. Keep your instruction atomic, with clear request of 'what to do' and 'how to do'. Respond a summary by yourself if you believe the issue is resolved. 
-}}
-(DO NOT contain "```json" and "```" tags. DO contain the JSON object with the brackets "{{}}" only. Use '\\n' instead of an actual newline character to ensure JSON compatibility when you want to insert a line break within a string.)
 
 Let's begin."""
 

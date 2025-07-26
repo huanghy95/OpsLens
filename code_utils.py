@@ -34,6 +34,11 @@ def save_code_blocks(code_blocks: List[Dict], filename: str = "gen_code_json/sav
                 'timestamp': current_time
             })
     
+    # Create directory if it doesn't exist
+    directory = os.path.dirname(filename)
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+    
     # If file exists, read existing data and append
     if os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as f:
@@ -57,6 +62,11 @@ def load_code_blocks(filename: str = "gen_code_json/saved_code_blocks.json") -> 
     Returns:
         List containing CodeBlock objects
     """
+    # Create directory if it doesn't exist
+    directory = os.path.dirname(filename)
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+    
     if not os.path.exists(filename):
         return []
     
@@ -85,6 +95,11 @@ def function_{index}_{timestamp}():
     """
 {indented_code}
 '''
+    
+    # Create directory if it doesn't exist
+    directory = os.path.dirname(output_file)
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
     
     # If file exists, read existing content first
     existing_content = ""

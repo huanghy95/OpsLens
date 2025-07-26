@@ -1,4 +1,6 @@
 import re
+import logging
+import os
 from dataclasses import dataclass
 from typing import List
 from autogen_core import AgentId
@@ -11,6 +13,30 @@ from autogen_core.models import (
     SystemMessage,
     UserMessage,
 )
+
+# 添加自定义 CODER 日志级别
+CODER_LEVEL = 25  # 介于 INFO (20) 和 WARNING (30) 之间
+logging.addLevelName(CODER_LEVEL, "CODER")
+
+def coder(self, message, *args, **kwargs):
+    if self.isEnabledFor(CODER_LEVEL):
+        self._log(CODER_LEVEL, message, args, **kwargs)
+
+logging.Logger.coder = coder
+
+logger = logging.getLogger(__name__)
+logger.setLevel(CODER_LEVEL)
+for handler in logger.handlers[:]:
+    logger.removeHandler(handler)
+
+coder_handler = logging.FileHandler('coder.log', mode='w', encoding='utf-8')
+coder_handler.setLevel(CODER_LEVEL)
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+coder_handler.setFormatter(formatter)
+
+logger.addHandler(coder_handler)
+logger.propagate = False
 
 from prompt import get_prompt_module
 from NoteBook import NotebookSystem
@@ -123,7 +149,7 @@ class Coder(RoutedAgent):
                 
                 print(f"[Token Statistics] {self._name}: prompt={prompt_tokens}, completion={completion_tokens}, total={total_tokens}, cumulative={Coder._token_usage['total']}")
             
-            print(f"\n{'-'*80}\n{self._name} Assistant:\n{result.content}")
+            logger.coder(f"\n{'-'*80}\n{self._name} Assistant:\n{result.content}")
             self._chat_history.append(AssistantMessage(content=result.content, source="assistant"))
         
             compressed_output = compress_duplicate_messages(result.content)
@@ -448,6 +474,7 @@ class Executor(RoutedAgent):
             # compressed_output = compress_duplicate_messages(result.output)
             truncated_output,is_truncated = truncate_output(result.output,self._max_output_length)
             print(f"\n{'-'*80}\nExecutor:\n{truncated_output}")
+            logger.coder(f"\n{'-'*80}\nExecutor:\n{truncated_output}")
             
             if len(result.output) > 5:
                 if self._refine_count[coder_name] >= self._max_refine_attempts:
@@ -457,7 +484,7 @@ class Executor(RoutedAgent):
                         recipient=AgentId(coder_name, "default")
                     )
                     self.execution_result = truncated_output
-                    if code_blocks[-1].language == "python":
+                    if code_blocks[-1].language.lower() in ['python', 'py']:
                         self.execution_code = code_blocks
                     self._refine_count[coder_name] = 0 # Reset retry count
                     return
@@ -498,7 +525,12 @@ class Executor(RoutedAgent):
                         # Text length threshold (fallback mechanism)
                         min_length = 0
                         max_length = 600
-
+                    else:
+                        refine_rules = "No specific refine rules defined for this coder."
+                        min_count = 0
+                        max_count = 1000
+                        min_length = 0
+                        max_length = 10000
                     # If anomaly events are successfully extracted, use event count; otherwise fallback to text length
                     if anomaly_count > 0:
                         # Check if anomaly event count is appropriate
@@ -518,6 +550,10 @@ class Executor(RoutedAgent):
                                 recipient=AgentId(coder_name, "default")
                             )
                             return
+                        # Successful execution logic
+                        self.execution_result = truncated_output
+                        if code_blocks[-1].language.lower() in ['python', 'py']:
+                            self.execution_code = code_blocks
                     else:
                         # Failed to extract events, fallback to text length based judgment
                         content_length = len(''.join(truncated_output.split()))
@@ -542,7 +578,7 @@ class Executor(RoutedAgent):
 
                         # Successful execution logic
                         self.execution_result = truncated_output
-                        if code_blocks[-1].language == "python":
+                        if code_blocks[-1].language.lower() in ['python', 'py']:
                             self.execution_code = code_blocks
                         
                         # Output different success messages based on whether anomaly events were detected
@@ -639,7 +675,7 @@ class MetricCoder(RoutedAgent):
                 
                 print(f"[Token Statistics] {self._name}: prompt={prompt_tokens}, completion={completion_tokens}, total={total_tokens}, cumulative={MetricCoder._token_usage['total']}")
             
-            print(f"\n{'-'*80}\n{self._name} Assistant:\n{result.content}")
+            logger.coder(f"\n{'-'*80}\n{self._name} Assistant:\n{result.content}")
             self._chat_history.append(AssistantMessage(content=result.content, source="assistant"))
             
             coder_message = Message(self._name + ":\n" + result.content)
@@ -728,7 +764,7 @@ class LogCoder(RoutedAgent):
                 
                 print(f"[Token Statistics] {self._name}: prompt={prompt_tokens}, completion={completion_tokens}, total={total_tokens}, cumulative={LogCoder._token_usage['total']}")
             
-            print(f"\n{'-'*80}\n{self._name} Assistant:\n{result.content}")
+            logger.coder(f"\n{'-'*80}\n{self._name} Assistant:\n{result.content}")
             self._chat_history.append(AssistantMessage(content=result.content, source="assistant"))
             
             coder_message = Message(self._name + ":\n" + result.content)
@@ -811,7 +847,7 @@ class TraceCoder(RoutedAgent):
                 
                 print(f"[Token Statistics] {self._name}: prompt={prompt_tokens}, completion={completion_tokens}, total={total_tokens}, cumulative={TraceCoder._token_usage['total']}")
             
-            print(f"\n{'-'*80}\n{self._name} Assistant:\n{result.content}")
+            logger.coder(f"\n{'-'*80}\n{self._name} Assistant:\n{result.content}")
             self._chat_history.append(AssistantMessage(content=result.content, source="assistant"))
             
             coder_message = Message(self._name + ":\n" + result.content)

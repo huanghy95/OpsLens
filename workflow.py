@@ -101,7 +101,7 @@ class DiagnosisWorkflow:
         await initialize_memory()
         
         # 1. Create and start executor first
-        workflow.docker_executor = DockerCommandLineCodeExecutor(work_dir="coding")
+        workflow.docker_executor = DockerCommandLineCodeExecutor(work_dir="coding",auto_remove=False,container_name='opslens')
         await workflow.docker_executor.start()
         workflow.executor_agent = await Executor.register(
             workflow.runtime, 
@@ -114,7 +114,7 @@ class DiagnosisWorkflow:
             workflow.runtime,
             "metric_coder",
             lambda: MetricCoder(
-                model_client,
+                reason_model_client,
                 name="metric_coder"
             ),
         )
@@ -122,7 +122,7 @@ class DiagnosisWorkflow:
             workflow.runtime,
             "log_coder",
             lambda: LogCoder(
-                model_client,
+                reason_model_client,
                 name="log_coder"
             ),
         )
@@ -130,7 +130,7 @@ class DiagnosisWorkflow:
             workflow.runtime,
             "trace_coder",
             lambda: TraceCoder(
-                model_client,
+                reason_model_client,
                 name="trace_coder"
             ),
         )
@@ -365,7 +365,7 @@ class DiagnosisWorkflow:
                     
                     print(f"[Token Statistics] investigator: prompt={prompt_tokens}, completion={completion_tokens}, current total={self.token_usage['investigator']['total']}")
             
-            await self.print_llm_response("investigator", response, system_message=investigator_prompt)
+            await self.print_llm_response("investigator", response)
             decision = response.chat_message.content
 
                 
@@ -376,7 +376,23 @@ class DiagnosisWorkflow:
                     
                 # Try to remove possible leading/trailing whitespace characters
                 decision = decision.strip()
-                decision_dict = eval(decision)
+                
+                # Handle markdown code block format (```json ... ```)
+                if decision.startswith("```json") and decision.endswith("```"):
+                    # Extract JSON content from markdown code block
+                    decision = decision[7:-3].strip()  # Remove ```json and ```
+                elif decision.startswith("```") and decision.endswith("```"):
+                    # Handle generic code block format (``` ... ```)
+                    decision = decision[3:-3].strip()  # Remove ``` and ```
+                
+                # Try JSON parsing first, then fall back to eval
+                try:
+                    import json
+                    decision_dict = json.loads(decision)
+                except json.JSONDecodeError:
+                    # Fall back to eval for non-JSON format
+                    decision_dict = eval(decision)
+                
                 explorer_name = decision_dict["explorer"]
                 task = decision_dict["task"]
                 # Verify if explorer is in available list
@@ -426,7 +442,7 @@ class DiagnosisWorkflow:
                     
                     print(f"[Token Statistics] {explorer_name}: prompt={prompt_tokens}, completion={completion_tokens}, current total={self.token_usage[explorer_name]['total']}")
             
-            await self.print_llm_response(explorer_name, response, system_message=explorer_msg)
+            await self.print_llm_response(explorer_name, response)
             
             # Check if need to generate new tool
             try:
@@ -463,7 +479,7 @@ class DiagnosisWorkflow:
                             
                             print(f"[Token Statistics] {explorer_name}(Retry): prompt={prompt_tokens}, completion={completion_tokens}, current total={self.token_usage[explorer_name]['total']}")
                     
-                    await self.print_llm_response(explorer_name, response, system_message=enriched_explorer_msg)
+                    await self.print_llm_response(explorer_name, response)
                     response_text = response.chat_message.content
                 # Try to extract need_tool_generate and tool_description from response
                 if 'NEED_TOOL_GENERATION' in response_text:
@@ -504,7 +520,7 @@ class DiagnosisWorkflow:
                             
                             print(f"[Token Statistics] {explorer_name}(Tool generated): prompt={prompt_tokens}, completion={completion_tokens}, current total={self.token_usage[explorer_name]['total']}")
                     
-                    await self.print_llm_response(explorer_name, response, system_message=enriched_explorer_msg)
+                    await self.print_llm_response(explorer_name, response)
                 
                 result = response.chat_message.content
                 # Save result to explorer_notebook
@@ -597,7 +613,7 @@ class DiagnosisWorkflow:
             [TextMessage(content=planning_msg, source="user")],
             cancellation_token=CancellationToken(),
         )
-        await self.print_llm_response("planner", response, system_message=planning_msg)
+        await self.print_llm_response("planner", response)
         diagnosis_plan = response.chat_message.content
         if hasattr(response, 'chat_message') and response.chat_message:
             if hasattr(response.chat_message, 'models_usage'):
@@ -662,7 +678,7 @@ class DiagnosisWorkflow:
                 
                 print(f"[Token Statistics] reasoner: prompt={prompt_tokens}, completion={completion_tokens}, current total={self.token_usage['reasoner']['total']}")
         
-        await self.print_llm_response("reasoner", response, system_message=reasoning_msg)
+        await self.print_llm_response("reasoner", response)
         root_cause = response.chat_message.content
         
         reason_end_time = datetime.now()
@@ -701,33 +717,11 @@ class DiagnosisWorkflow:
         } 
     
     
-    
-    async def print_llm_response(self, agent_name, response, system_message=None):
+    async def print_llm_response(self, agent_name, response):
         print(f"--------------------------------{agent_name}--------------------------------")
-        print(f"[{agent_name}] _model_context:")
-        messages = await self.agents[agent_name]._model_context.get_messages()
-        pprint.pprint(messages)
-        print(f"[{agent_name}] system_message:")
-        pprint.pprint(system_message)
-        print(f"[{agent_name}] inner_messages:")
-        pprint.pprint(response.inner_messages)
-        print(f"[{agent_name}] tool_list:")
-        if hasattr(self.agents[agent_name], '_tools'):
-            tools = self.agents[agent_name]._tools
-            tool_names = [tool.name for tool in tools]
-            pprint.pprint(tool_names)
-        if response.inner_messages:
-            print("\n")
-            print(f"======function_call content=======")
-            for msg in response.chat_message:
-                if hasattr(msg, 'models_usage'):
-                    print(f"[Token Usage] prompt_tokens={getattr(msg.models_usage, 'prompt_tokens', 0)}, completion_tokens={getattr(msg.models_usage, 'completion_tokens', 0)}")
-            print("======function_call content=======")
-            print("\n")
-        print(f"[{agent_name}] chat_message:")
-        pprint.pprint(response.chat_message)
         print(f"[{agent_name}] response:")
-        pprint.pprint(response.chat_message.content)
+        # pprint.pprint(response.chat_message.content)
+        print(response.chat_message.content)
         print("-----------------------------------------------------------------------------")
     
  

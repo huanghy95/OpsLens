@@ -41,7 +41,6 @@ async def add_investigator_memory():
 
 async def add_log_explorer_memory():
     content = json.dumps(METADATA["log"], ensure_ascii=False)
-    print("log_explorer_memory", content)
     await log_explorer_memory.add(
         MemoryContent(
             content=content,
@@ -52,7 +51,6 @@ async def add_log_explorer_memory():
 
 async def add_metric_explorer_memory():
     content = json.dumps(METADATA["metric"], ensure_ascii=False)
-    print("metric_explorer_memory", content)
     await metric_explorer_memory.add(
         MemoryContent(
             content=content,
@@ -63,7 +61,6 @@ async def add_metric_explorer_memory():
 
 async def add_trace_explorer_memory():
     content = json.dumps(METADATA["trace"], ensure_ascii=False)
-    print("trace_explorer_memory", content)
     await trace_explorer_memory.add(
         MemoryContent(
             content=content,

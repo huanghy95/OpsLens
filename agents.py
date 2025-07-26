@@ -42,12 +42,35 @@ async def initialize_memory():
 if __name__ == "__main__":
     asyncio.run(initialize_memory())
 
-model_client = OpenAIChatCompletionClient(
-    model="",
-    base_url="",
-    api_key="",
-    temperature=0,
+
+
+reason_model_client =  OpenAIChatCompletionClient(
+        model="",
+        base_url="",
+        api_key="",
+        model_info={
+        "vision": True,
+        "function_calling": True,
+        "json_output": False,
+        "family": "unknown",
+        },
+        temperature=0,
 )
+
+model_client =  OpenAIChatCompletionClient(
+        model="",
+        base_url="",
+        api_key="",
+        model_info={
+        "vision": True,
+        "function_calling": True,
+        "json_output": False,
+        "family": "unknown",
+        },
+        temperature=0,
+)
+
+
 
 
 # Planner Agent
@@ -55,7 +78,6 @@ planner_agent = AssistantAgent(
     name="planner",
     system_message=system_planer,
     model_client=model_client,
-
 )
 
 # Investigator Agent (Controller)
