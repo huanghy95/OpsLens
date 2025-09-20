@@ -1,0 +1,134 @@
+# OpsLens dataset config file
+# Switch datasets by modifying current_dataset
+
+# current dataset (modify here to switch datasets)
+current_dataset: "bank"  # optional: "bank", "telecom", "market"
+
+# dataset config
+datasets:
+  bank:
+    # Prompt config
+    prompt_type: "bank"
+
+    # Tool Ecosystem storage path
+    tool_ecosystem:
+      metric: "./tool_ecosystem_metric_bank"
+      log: "./tool_ecosystem_log_bank"
+      trace: "./tool_ecosystem_trace_bank"
+
+    # Coder Memory storage path
+    coder_memory:
+      chroma_storage: "./memory/coder_chroma_bank"
+      refinement_storage: "./memory/coder_refinement_bank"
+
+    # data path config
+    data_paths:
+      base_path: "./coding/dataset" 
+      relative_root: "./Bank/telemetry"
+
+    # tool files
+    tool_files:
+      metric_tools: "tools.bank_metric_tools"
+      log_tools: "tools.bank_log_tools"
+      trace_tools: "tools.bank_trace_tools"
+
+    # log config
+    log_config:
+      dataset_name: "Bank"
+
+  telecom:
+    # Prompt config
+    prompt_type: "tele"
+
+    # Tool Ecosystem storage path
+    tool_ecosystem:
+      metric: "./tool_ecosystem_metric_telecom"
+      log: "./tool_ecosystem_log_telecom"
+      trace: "./tool_ecosystem_trace_telecom"
+
+    # Coder Memory storage path
+    coder_memory:
+      chroma_storage: "./memory/coder_chroma_telecom"
+      refinement_storage: "./memory/coder_refinement_telecom"
+
+    # data path config
+    data_paths:
+      base_path: "./coding/dataset"
+      relative_root: "./Telecom/telemetry"
+
+    # tool files
+    tool_files:
+      metric_tools: "tools.telecom_metric_tools"
+      log_tools: "tools.telecom_log_tools"
+      trace_tools: "tools.telecom_trace_tools"
+
+    # log config
+    log_config:
+      dataset_name: "Telecom"
+
+  market:
+    # Prompt config
+    prompt_type: "market"
+
+    # Tool Ecosystem storage path
+    tool_ecosystem:
+      metric: "./tool_ecosystem_metric_market"
+      log: "./tool_ecosystem_log_market"
+      trace: "./tool_ecosystem_trace_market"
+
+    # Coder Memory storage path
+    coder_memory:
+      chroma_storage: "./memory/coder_chroma_market"
+      refinement_storage: "./memory/coder_refinement_market"
+
+    # data path config
+    data_paths:
+      base_path: "./coding/dataset"
+      relative_root: "./Market/cloudbed-1/telemetry"
+      relative_root_2: "./Market/cloudbed-2/telemetry"  # second path of Market dataset
+
+    # tool files
+    tool_files:
+      metric_tools: "tools.market_metric_tools"
+      log_tools: "tools.market_log_tools"
+      trace_tools: "tools.market_trace_tools"
+
+    # log config
+    log_config:
+      dataset_name: "Market"
+
+# global config
+global_config:
+  # OpenAI API config
+  openai:
+    api_key: "sk-zUdkQ55bbSDBCmEw5TLn8grsJXcSnnArYw9QpjSWq6RCgYRV"
+    base_url: "https://api.chatanywhere.tech/v1"
+    model: "gpt-5-mini"
+    embedding_model: "text-embedding-3-large"
+
+  # model clients config
+  model_clients:
+    default:
+      model: "gpt-5-mini"
+      temperature: 0
+      model_info:
+        vision: true
+        function_calling: true
+        json_output: false
+        family: "unknown"
+    reason:
+      model: "gemini-2.5-pro"
+      temperature: 0
+      model_info:
+        vision: true
+        function_calling: true
+        json_output: false
+        family: "unknown"
+
+  # default timeout settings
+  timeouts:
+    task_timeout: 1800  # 30 minutes
+    memory_timeout: 600  # 10 minutes
+
+  # log level
+  log_level: "INFO"

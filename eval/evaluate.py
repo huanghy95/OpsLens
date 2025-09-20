@@ -324,8 +324,9 @@ def file_evaluate(prediction_file:str, query_file:str, report_file:str):
     pred_df = pd.read_csv(prediction_file)
     query_df = pd.read_csv(query_file)
     eval_df = pd.DataFrame(columns=[
-        "query", "answer", "groundtruth", "passed", "failed", "score", 
-        "is_top1_match", "is_top3_match", "is_top1_partial", "is_top3_partial", "task_index"
+        "query", "answer", "groundtruth", "passed", "failed", "score",
+        "is_top1_match", "is_top3_match", "is_top1_partial", "is_top3_partial", "task_index",
+        "task_completion_types", "tool_library_count"
     ])
 
     if len(pred_df) != len(query_df):
@@ -337,18 +338,25 @@ def file_evaluate(prediction_file:str, query_file:str, report_file:str):
         passing_criteria, failing_criteria, score, is_top1_match, is_top3_match, is_top1_partial, is_top3_partial = evaluate(prediction, scoring_points)
         instruction = query_df.loc[idx, "instruction"]
         task_index = query_df.loc[idx, "task_index"]
+
+        # 获取新字段，如果不存在则使用默认值
+        task_completion_types = pred_df.loc[idx, "task_completion_types"] if "task_completion_types" in pred_df.columns else "[]"
+        tool_library_count = pred_df.loc[idx, "tool_library_count"] if "tool_library_count" in pred_df.columns else 0
+
         new_row = pd.DataFrame({
-            "query": [instruction], 
-            "answer": [prediction], 
-            "groundtruth": [scoring_points], 
-            "passed": [passing_criteria], 
-            "failed": [failing_criteria], 
-            "score": [score], 
+            "query": [instruction],
+            "answer": [prediction],
+            "groundtruth": [scoring_points],
+            "passed": [passing_criteria],
+            "failed": [failing_criteria],
+            "score": [score],
             "is_top1_match": [is_top1_match],
             "is_top3_match": [is_top3_match],
             "is_top1_partial": [is_top1_partial],
             "is_top3_partial": [is_top3_partial],
-            "task_index": [task_index]
+            "task_index": [task_index],
+            "task_completion_types": [task_completion_types],
+            "tool_library_count": [tool_library_count]
         })
         eval_df = pd.concat([eval_df, new_row], ignore_index=True)
 

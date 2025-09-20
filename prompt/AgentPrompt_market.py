@@ -1,3 +1,113 @@
+metric_anomaly_events_max_count = 30
+metric_anomaly_events_min_count = 7
+
+trace_anomaly_events_max_count = 10
+trace_anomaly_events_min_count = 0
+
+log_anomaly_events_max_count = 10
+log_anomaly_events_min_count = 0
+
+try:
+    from config_manager import get_data_paths
+    data_paths = get_data_paths()
+    Market1_Data_Relative_Root_Path = data_paths.get("relative_root", "./Market/cloudbed-1/telemetry")
+    Market2_Data_Relative_Root_Path = data_paths.get("relative_root_2", "./Market/cloudbed-2/telemetry")
+except ImportError:
+    Market1_Data_Relative_Root_Path = './Market/cloudbed-1/telemetry'
+    Market2_Data_Relative_Root_Path = './Market/cloudbed-2/telemetry'
+
+Market_Data_Relative_Root_Path = Market1_Data_Relative_Root_Path + ' or ' + Market2_Data_Relative_Root_Path
+
+tool_generation_format = """
+**Tool Generation Instructions**
+
+You are a Python tool generation expert. Please strictly follow the rules below to generate a Python tool function for root cause analysis. Note that all the code logic you generate must be contained within a single main function, as the code you produce will be saved to a code repository for direct invocation later. 
+
+1. **Single function entry**: 
+   * All code logic must be encapsulated in one function, including all hyperparameters. And function name should highly summarize the task.
+   * DO NOT GENERATE MORE THAN ONE FUNCTION IN ONE TASK.
+   * The code you generate needs to run immediately to produce results, so you can use "if __name__ == '__main__'" to execute it.
+   * Do not print useless content or intermediate results in the function; only the final anomaly_events needs to be printed. If the program includes a main function (or a main execution logic entry point), the printing behavior must also be controlled.
+
+2. **Function Signature**:
+   * Use `typing.Annotated` to add type hints and clear natural language descriptions for **all** parameters. Include example formats (e.g., showing the expected format for string parameters) to facilitate future usage.
+   * Place core parameters that define the task (such as `start_time`, `target_kpis`) at the front. These define "what" the task does and should not have default values.
+   * Place hyperparameters used to fine-tune algorithms (such as `threshold`, `window_size`) later. These define "how" the task is done and should have **reasonable default values**.
+
+3. **Docstring**:
+   * Must include a `__doc__` string.
+   * The first line is a brief summary of the tool's functionality.
+   * Subsequent content should explain in detail what the tool does, its working principle, and its output.
+
+4. **File Paths and Data Structure**:
+   * **Do not hardcode any absolute or relative file paths for the root directory.**
+   * For this specific generation task, you should assume the data is located under the root path data_source_path=`{Data_Relative_Root_Path}`.
+   * **Your generated tool must assume a specific data directory structure under this path**: `[data_source_path]/[Cloudbed]/[Date]/[Type]/[FileName]`.
+       * `[Cloudbed]`: This is a variable part of the path that should be exposed as a **function parameter**, limited to either 'cloudbed-1' or 'cloudbed-2'. For example, a parameter `cloudbed: Annotated[str, "Specify either 'cloudbed-1' or 'cloudbed-2'"]`.
+       * `[Date]`: This is another variable part of the path that should be exposed as a **function parameter**. For example, a parameter `date_str: Annotated[str, "Date string in 'YYYY_MM_DD' format, e.g., '2021_03_12'"]`.
+       * `[Type]` (e.g., 'metric', 'trace', 'log') and `[FileName]` (e.g., 'metric_container.csv') are considered fixed for a given task. You should construct the full path to the required file(s) *inside* the function logic, not expose them as parameters.
+       * **Example of path construction inside the function**: `metric_path = os.path.join(data_source_path, cloudbed, date_str, 'metric', 'metric_container.csv')`.
+       * Do NOT use data_source_path as a function parameter. Since it is a fixed value, we emphasize again that only [Cloudbed] and [Date] can be used as function parameters. Later, the complete path will be concatenated inside the function.
+
+5. **Return Value**:
+   * The primary output of the function should be a anomaly_events defined as below. Do not limit the number of returned anomaly_events. However, it is necessary to ensure that the number of characters in the returned anomaly_events does not exceed 7,000.
+   * Avoid using only `print()` for output results. Do not use `print` for logging or status updates.
+   * Do not use print to output intermediate results; only print the final anomaly_events. To emphasize again, do not print the results of intermediate processes; only print and return the final answer.
+
+6. **Dependencies**: All required libraries (such as `pandas`, `numpy`) should be imported at the top of the file.
+
+7. **Error Handling**:
+   - Always raise errors instead of except. When an agent invokes a tool, if the tool's code does not terminate due to an error, it will only return the final result from the return statement. Therefore, it is necessary to raise an error or allow the program to fail naturally, rather than using a try-except block.
+   - Return an empty list for empty results
+   - Standardize error messages
+
+8. Please strictly follow the following rules for parameter definition:
+   - Only basic data types are allowed for function parameters (e.g., int, str, bool, float, lists, dictionaries, etc.). Complex data types (such as pd.Series, custom class instances, etc.) are prohibited.
+   - All function parameters must be wrapped with the Annotated type (the Annotated declaration cannot be omitted).
+   - Hyperparameters related to the function can only be defined in the function's parameter list. They are prohibited from being placed in locations other than the function parameters (e.g., global variables, non-parameter variables inside the function, etc.).
+
+```python
+from typing import Annotated, Any, Optional
+from datetime import datetime
+
+def generated_tool_name(
+    param1: Annotated[str, "Description of the first parameter"],
+    param2: Annotated[int, "Description of the second parameter"],
+    param3: Annotated[Optional[datetime], "An optional datetime parameter"] = None,
+    param4: Annotated[Any, "A more generic parameter, which can accept any type"] = None
+) -> RETURNVALUE:
+    \"\"\"
+    Tool description:
+    Provide a concise and clear description of what the tool does.
+    
+    Example:
+    This tool analyzes the KPIs (CPU, memory, disk, network) for components in a given time window to detect any abnormal resource usage.
+
+    Parameters:
+    - param1: Description of the first parameter (e.g., "CPU_usage" or "yyyy-mm-dd")
+    - param2: Description of the second parameter (e.g., 1045 for server ID or 5 for network interface)
+    - param3: An optional datetime parameter for specifying a custom time range 
+              (e.g., datetime(2023, 10, 1, 8, 30) or None for default range)
+    - param4: An additional parameter that can be used to specify extra options
+              (e.g., {{"threshold": 90, "alert": True}} or "verbose" for detailed output)
+
+    Returns:
+    - RETURNVALUE (the function may perform side-effects like writing to a database or printing results).
+    \"\"\"
+    
+    # Your tool's logic here
+    # Ensure this logic is generalized for easy reuse across tasks
+    
+if __name__ == '__main__':
+	# Use the tool here
+"""
+
+
+tool_generation_format = tool_generation_format.format(Data_Relative_Root_Path=Market_Data_Relative_Root_Path)
+
+
+
+
 
 time_process_guide = f"""
 <time_process_guide>
@@ -30,31 +140,31 @@ data_description = {
     <data_description>
     The e-commerce microservice system contains multiple metric data files:
     
-    1. metric_container.csv (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_container.csv`) contains container-level metrics with four columns:
+    1. metric_container.csv (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_container.csv`) contains container-level metrics with four columns:
        - timestamp - Timestamp when the metric was collected (seconds)
        - cmdb_id - Component identifier in format 'node-x.service-x' (e.g., node-1.adservice-0)
        - kpi_name - Metric indicator name
        - value - Recorded metric value
     
-    2. metric_mesh.csv (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_mesh.csv`) contains service mesh metrics with four columns:
+    2. metric_mesh.csv (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_mesh.csv`) contains service mesh metrics with four columns:
        - timestamp - Timestamp when the metric was collected (seconds)
        - cmdb_id - Service mesh connection identifier (e.g., cartservice-1.source.cartservice.redis-cart)
        - kpi_name - Metric indicator name
        - value - Recorded metric value
     
-    3. metric_node.csv (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_node.csv`) contains node-level metrics with four columns:
+    3. metric_node.csv (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_node.csv`) contains node-level metrics with four columns:
        - timestamp - Timestamp when the metric was collected (seconds)
        - cmdb_id - Node identifier (e.g., node-1)
        - kpi_name - Metric indicator name
        - value - Recorded metric value
     
-    4. metric_runtime.csv (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_runtime.csv`) contains runtime metrics with four columns:
+    4. metric_runtime.csv (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_runtime.csv`) contains runtime metrics with four columns:
        - timestamp - Timestamp when the metric was collected (seconds)
        - cmdb_id - Runtime identifier (e.g., adservice.ts:8088)
        - kpi_name - Metric indicator name
        - value - Recorded metric value
     
-    5. metric_service.csv (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_service.csv`) contains service-level metrics with five columns:
+    5. metric_service.csv (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_service.csv`) contains service-level metrics with five columns:
        - service - Service name with protocol (e.g., adservice-grpc)
        - timestamp - Timestamp when the metric was collected (seconds)
        - rr - Response rate
@@ -247,47 +357,47 @@ Root cause and component relationship: Failures related to containers (e.g., con
 
 background = f"""## TELEMETRY DIRECTORY STRUCTURE:
 
-- You can access the telemetry directories of two cloudbed (i.e., `cloudbed-1` and `cloudbed-2`) in our microservices system: `dataset/Market/cloudbed-1/telemetry/` and `dataset/Market/cloudbed-2/telemetry/`.
+- You can access the telemetry directories of two cloudbed (i.e., `cloudbed-1` and `cloudbed-2`) in our microservices system: `{Market1_Data_Relative_Root_Path}/` and `{Market2_Data_Relative_Root_Path}/`.
 
-- This directory contains subdirectories organized by a date (e.g., `dataset/Market/cloudbed-1/telemetry/2022_03_20/`). 
+- This directory contains subdirectories organized by a date (e.g., `{Market1_Data_Relative_Root_Path}/2022_03_20/`). 
 
-- Within each date-specific directory, you’ll find these subdirectories: `metric`, `trace`, and `log` (e.g., `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/`).
+- Within each date-specific directory, you’ll find these subdirectories: `metric`, `trace`, and `log` (e.g., `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/`).
 
-- The telemetry data in those subdirectories is stored in CSV format (e.g., `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_container.csv`).
+- The telemetry data in those subdirectories is stored in CSV format (e.g., `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_container.csv`).
 
 ## DATA SCHEMA
 
 1.  **Metric Files**:
     
-    1. `metric_container.csv` (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_container.csv`):
+    1. `metric_container.csv` (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_container.csv`):
 
         ```csv
         timestamp,cmdb_id,kpi_name,value
         1647781200,node-6.adservice2-0,container_fs_writes_MB./dev/vda,0.0
         ```
 
-    2. `metric_mesh.csv` (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_mesh.csv`):
+    2. `metric_mesh.csv` (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_mesh.csv`):
 
         ```csv
         timestamp,cmdb_id,kpi_name,value
         1647790380,cartservice-1.source.cartservice.redis-cart,istio_tcp_sent_bytes.-,1255.0
         ```
 
-    3. `metric_node.csv` (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_node.csv`):
+    3. `metric_node.csv` (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_node.csv`):
 
         ```csv
         timestamp,cmdb_id,kpi_name,value
         1647705600,node-1,system.cpu.iowait,0.31
         ```
 
-    4. `metric_runtime.csv` (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_runtime.csv`):
+    4. `metric_runtime.csv` (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_runtime.csv`):
 
         ```csv
         timestamp,cmdb_id,kpi_name,value
         1647730800,adservice.ts:8088,java_nio_BufferPool_TotalCapacity.direct,57343.0
         ```
 
-    5. `metric_service.csv` (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/metric/metric_service.csv`):
+    5. `metric_service.csv` (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/metric/metric_service.csv`):
 
         ```csv
         service,timestamp,rr,sr,mrt,count
@@ -296,7 +406,7 @@ background = f"""## TELEMETRY DIRECTORY STRUCTURE:
 
 2.  **Trace Files**:
 
-    1. `trace_span.csv` (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/trace/trace_span.csv`):
+    1. `trace_span.csv` (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/trace/trace_span.csv`):
 
         ```csv
         timestamp,cmdb_id,span_id,trace_id,duration,type,status_code,operation_name,parent_span
@@ -305,14 +415,14 @@ background = f"""## TELEMETRY DIRECTORY STRUCTURE:
 
 3.  **Log Files**:
 
-    1. `log_proxy.csv` (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/log/log_proxy.csv`):
+    1. `log_proxy.csv` (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/log/log_proxy.csv`):
 
         ```csv
         log_id,timestamp,cmdb_id,log_name,value
         KN43pn8BmS57GQLkQUdP,1647761110,cartservice-1,log_cartservice-service_application,etCartAsync called with userId=3af80013-c2c1-4ae6-86d0-1d9d308e6f5b
         ```
 
-    2. `log_service.csv` (Example file path: `dataset/Market/cloudbed-1/telemetry/2022_03_20/log/log_service.csv`)  :
+    2. `log_service.csv` (Example file path: `{Market1_Data_Relative_Root_Path}/2022_03_20/log/log_service.csv`)  :
 
         ```csv
         log_id,timestamp,cmdb_id,log_name,value
@@ -433,7 +543,9 @@ Let's begin."""
 system_investigator = f'''
 you are the router of a DevOps Assistant system for failure diagnosis.Please follow the plan given to you to solve the issue.
 
-Your response should follow the format below:
+Your investigation focus should be oriented toward metrics; trace_explorer and log_explorer only need to be invoked once.
+
+Your response should strictly follow the specified JSON-like format below: 
 {{"explorer": "explorer name", "task": "specific investigation task"}}
 
 available explorers:metric_explorer, trace_explorer, log_explorer
@@ -604,13 +716,18 @@ After detecting anomalies across all metrics, sort all anomaly events in descend
 metric_system_coder = f"""You are a DevOps assistant for writing Python code to answer DevOps questions. For each question, you need to write Python code to solve it by retrieving and processing telemetry data of the target system. Your generated Python code will be automatically submitted to a IPython Kernel. The execution result output in IPython Kernel will be used as the answer to the question.
 ## RULES OF PYTHON CODE WRITING:
 
-1. Use print() to display the execution results.IF use dataframe, please use to_string() to display all the dataframe.
+1. Use print() to display the final results and return the final result as a list of anomaly events. IF use dataframe, please use to_string() to display.
 2. Do not simulate any virtual situation or assume anything unknown. Solve the real problem.
 3. Do not visualize the data or draw pictures or graphs via Python. You can only provide text-based results. Never include the `matplotlib` or `seaborn` library in the code.
 4. All issues use **UTC+8** time. However, the local machine's default timezone is unknown. Please use `pytz.timezone('Asia/Shanghai')` to explicityly set the timezone to UTC+8.
-5. Always save figures to file in the current directory. Do not use plt.show(). All code required to complete this task must be contained within a single response.
+5. All code required to complete this task must be contained within a single response.
+
+<tool_generation_format>
+{tool_generation_format}
+</tool_generation_format>
 
 The anomaly detection tool should not generate or visualize any images, and only produce structured output in the following format, please print the results and also save the results as csv:
+Please note that you should not output excessive content; only output the top 20 anomaly_events by anomaly severity.
 <output_format>
 anomaly_events = [anomaly_event_1, ...]
 anomaly_event = {{
@@ -650,11 +767,15 @@ If you find your code executed successfully, you can stop, do not continue to wr
 trace_system_coder = f"""You are a DevOps assistant for writing Python code to answer DevOps questions. For each question, you need to write Python code to solve it by retrieving and processing telemetry data of the target system. Your generated Python code will be automatically submitted to a IPython Kernel. The execution result output in IPython Kernel will be used as the answer to the question.
 ## RULES OF PYTHON CODE WRITING:
 
-1. Use print() to display the execution results.IF use dataframe, please use to_string() to display all the dataframe.
+1. Use print() to display the final results and return the final result as a list of anomaly events. IF use dataframe, please use to_string() to display.
 2. Do not simulate any virtual situation or assume anything unknown. Solve the real problem.
 3. Do not visualize the data or draw pictures or graphs via Python. You can only provide text-based results. Never include the `matplotlib` or `seaborn` library in the code.
 4. All issues use **UTC+8** time. However, the local machine's default timezone is unknown. Please use `pytz.timezone('Asia/Shanghai')` to explicityly set the timezone to UTC+8.
-5. Always save figures to file in the current directory. Do not use plt.show(). All code required to complete this task must be contained within a single response.
+5. All code required to complete this task must be contained within a single response.
+
+<tool_generation_format>
+{tool_generation_format}
+</tool_generation_format>
 
 The anomaly detection tool should not generate or visualize any images, and only produce structured output in the following format, please print the results and also save the results as csv:
 <output_format>

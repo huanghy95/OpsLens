@@ -1,305 +1,414 @@
-# from llmrca.utils import project_root
+# nezha_parallel.py
 import os
 import json
 import pandas as pd
 import numpy as np
 import re
-import warnings
+from collections import defaultdict
+import time
 import concurrent.futures
-from nonllm_method.utils.CSVFormat import *
+from utils.CSVFormat import *
+import warnings
+
 warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
 
-
-def apply_3sigma(series, mean=None, std_dev=None):
-    if mean is None or std_dev is None:
-        mean = series.mean()
-        std_dev = series.std()
-    if std_dev == 0:
-        return series.apply(lambda x: 0), mean, std_dev
-    lower_bound = mean - 3 * std_dev
-    upper_bound = mean + 3 * std_dev
-    return series.apply(lambda x: 1 if x < lower_bound or x > upper_bound else 0), mean, std_dev
+# Global hyperparameter variables
+SIGMA_THRESHOLD = 3  # 3-sigma threshold
+MIN_SUPPORT = 5  # Minimum support
+MIN_SCORE = 0.67  # Minimum score threshold
 
 
-def detect_log_change(series):
-    first_value = series.iloc[0]
-    return series.apply(lambda x: 1 if x != first_value else 0)
+class AnomalyDetector:
+    """Application-level metric anomaly detector using 3-sigma rule - optimized version"""
 
+    def __init__(self, sigma_threshold=None):
+        self.sigma_threshold = sigma_threshold if sigma_threshold is not None else SIGMA_THRESHOLD
+        self.baseline_stats = {}
 
-def process_data(df_data, column_stats, log_first_values=None):
-    # print("df_data:",df_data)
-    try:
-        df_data["duration_processed"], column_stats["duration"]["mean"], column_stats["duration"]["std_dev"] = apply_3sigma(df_data["duration"], column_stats["duration"]["mean"], column_stats["duration"]["std_dev"])
-    except:
-        df_data["duration_processed"], column_stats["elapsedTime"]["mean"], column_stats["elapsedTime"]["std_dev"] = apply_3sigma(df_data["elapsedTime"], column_stats["elapsedTime"]["mean"], column_stats["elapsedTime"]["std_dev"])
-        
-    
-    log_columns = [col for col in df_data.columns if col.startswith("log@")]
-    if log_first_values is None:
-        log_first_values = {}
-    for col in log_columns:
-        if col not in log_first_values:
-            log_first_values[col] = df_data[col].iloc[0]
-        df_data[f"{col}_processed"] = df_data[col].apply(lambda x: 1 if x != log_first_values[col] else 0)
-    metric_columns = [col for col in df_data.columns if col.startswith("metric@")]
-    for col in metric_columns:
-        mean, std_dev = column_stats.get(col, {"mean": None, "std_dev": None}).values()
-        df_data[f"{col}_processed"], column_stats[col]["mean"], column_stats[col]["std_dev"] = apply_3sigma(df_data[col], mean, std_dev)
-    return df_data, column_stats, log_first_values
+    def fit_baseline(self, df, metric_columns):
+        """Calculate mean and standard deviation for normal phase"""
+        for col in metric_columns:
+            if col in df.columns:
+                self.baseline_stats[col] = {"mean": df[col].mean(), "std": df[col].std()}
 
+    def detect_anomaly(self, series, col_name):
+        """Detect if metric is anomalous (violates 3-sigma rule) - vectorized version"""
+        if col_name not in self.baseline_stats:
+            return pd.Series(0, index=series.index)
 
-def calculate_processed_frequency(df):
-    processed_columns = [col for col in df.columns if col.endswith("_processed")]
-    frequency = {}
-    for col in processed_columns:
-        ones_count = df[col].sum()
-        total_count = len(df[col])
-        frequency[col] = ones_count / total_count
-    return frequency
+        mean = self.baseline_stats[col_name]["mean"]
+        std = self.baseline_stats[col_name]["std"]
 
+        if std == 0:
+            return pd.Series(0, index=series.index)
 
-def expected_pattern_ranker(train_ones_frequency, predict_ones_frequency):
-    scores_e = {}
-    for col in train_ones_frequency:
-        s_c = train_ones_frequency[col]
-        s_p = predict_ones_frequency.get(col, 0)
-        if s_c + s_p != 0:
-            scores_e[col] = s_c / (s_c + s_p)
+        # Vectorized calculation, avoid apply
+        if "duration" in col_name or "latency" in col_name:
+            upper_bound = mean + self.sigma_threshold * std
+            return (series > upper_bound).astype(int)
+        elif "success_rate" in col_name or "availability" in col_name:
+            lower_bound = mean - self.sigma_threshold * std
+            return (series < lower_bound).astype(int)
         else:
-            scores_e[col] = 0
-    return scores_e
+            lower_bound = mean - self.sigma_threshold * std
+            upper_bound = mean + self.sigma_threshold * std
+            return ((series < lower_bound) | (series > upper_bound)).astype(int)
 
 
-def actual_pattern_ranker(train_ones_frequency, predict_ones_frequency):
-    scores_a = {}
-    for col in predict_ones_frequency:
-        s_p = predict_ones_frequency[col]
-        s_c = train_ones_frequency.get(col, 0)
-        if s_c + s_p != 0:
-            scores_a[col] = s_p / (s_p + s_c)
-        else:
-            scores_a[col] = 0
-    return scores_a
+class DataIntegrator:
+    """Data integrator - batch processing version"""
+
+    def __init__(self):
+        self.log_templates = {}
+
+    def extract_log_templates(self, log_series):
+        """Extract log templates, remove dynamic parameters"""
+        first_value = log_series.iloc[0] if len(log_series) > 0 else ""
+        return first_value
+
+    def generate_metric_events(self, df, anomaly_detector):
+        """Generate metric anomaly events - batch processing version"""
+        metric_columns = [col for col in df.columns if col.startswith("metric@")]
+
+        # Batch process all metric columns
+        for col in metric_columns:
+            anomaly_col = f"{col}_anomaly"
+            df[anomaly_col] = anomaly_detector.detect_anomaly(df[col], col)
+
+        return df
+
+    def generate_log_events(self, df):
+        """Generate log events - vectorized version"""
+        log_columns = [col for col in df.columns if col.startswith("log@")]
+
+        for col in log_columns:
+            if col not in self.log_templates:
+                self.log_templates[col] = self.extract_log_templates(df[col])
+
+            template = self.log_templates[col]
+            change_col = f"{col}_change"
+            # Vectorized comparison, avoid apply
+            df[change_col] = (df[col] != template).astype(int)
+
+        return df
 
 
-def aggregate_redundant_patterns(expected_scores, actual_scores, threshold=0.7):
-    aggregated_patterns = {}
-    for col in expected_scores:
-        score_e = expected_scores.get(col, 0)
-        score_a = actual_scores.get(col, 0)
-        if score_e > threshold or score_a > threshold:
-            aggregated_patterns[col] = max(score_e, score_a)
-    if "duration_processed" in aggregated_patterns:
-        duration_score = aggregated_patterns.pop("duration_processed")
-        sorted_patterns = sorted(aggregated_patterns.items(), key=lambda item: item[1], reverse=True)
-        sorted_patterns.append(("duration_processed", duration_score))
-    else:
-        sorted_patterns = sorted(aggregated_patterns.items(), key=lambda item: item[1], reverse=True)
-    return sorted_patterns
+class PatternMiner:
+    """Pattern miner - batch calculation version"""
+
+    def __init__(self, min_support=None):
+        self.min_support = min_support if min_support is not None else MIN_SUPPORT
+
+    def calculate_support(self, df, event_columns):
+        """Calculate pattern support - vectorized version"""
+        # Only select existing columns
+        existing_columns = [col for col in event_columns if col in df.columns]
+
+        if not existing_columns:
+            return {}
+
+        # Batch calculate support for all columns
+        support_series = df[existing_columns].sum()
+
+        # Filter patterns that meet minimum support
+        support_dict = support_series[support_series >= self.min_support].to_dict()
+
+        return support_dict
 
 
-def calculate_node_fault_mode(train_df, predict_df, node_name, column_stats=None):
-    # print("*****enter calculate_node_fault_mode*****")
-    train_node_df = train_df[train_df["name"] == node_name]
-    # print("train_node_df:",train_node_df)
-    predict_node_df = predict_df[predict_df["name"] == node_name]
-    if column_stats is None:
-        try:
-            column_stats = {"duration": {"mean": train_node_df["duration"].mean(), "std_dev": train_node_df["duration"].std()}}
-        except:
-            column_stats = {"elapsedTime": {"mean": train_node_df["elapsedTime"].mean(), "std_dev": train_node_df["elapsedTime"].std()}}
-           
-    metric_columns = [col for col in train_node_df.columns if col.startswith("metric@")]
-    for col in metric_columns:
-        column_stats[col] = {"mean": train_node_df[col].mean(), "std_dev": train_node_df[col].std()}
-    processed_train_df, column_stats, log_first_values = process_data(train_node_df, column_stats)
-    processed_predict_df, _, _ = process_data(predict_node_df, column_stats, log_first_values)
-    train_ones_frequency = calculate_processed_frequency(processed_train_df)
-    predict_ones_frequency = calculate_processed_frequency(processed_predict_df)
-    expected_scores = expected_pattern_ranker(train_ones_frequency, predict_ones_frequency)
-    actual_scores = actual_pattern_ranker(train_ones_frequency, predict_ones_frequency)
-    return aggregate_redundant_patterns(expected_scores, actual_scores, threshold=0.7)
+class PatternRanker:
+    """Pattern ranker, calculate expected pattern and actual pattern scores"""
+
+    def __init__(self, min_score_threshold=None):
+        self.min_score_threshold = (
+            min_score_threshold if min_score_threshold is not None else MIN_SCORE
+        )
+
+    def rank_expected_patterns(self, normal_support, fault_support):
+        """Calculate expected pattern score E(ρ) = C(ρ)/(P(ρ) + C(ρ))"""
+        expected_scores = {}
+
+        for pattern in normal_support:
+            c_support = normal_support[pattern]
+            p_support = fault_support.get(pattern, 0)
+
+            if c_support + p_support > 0:
+                score = c_support / (p_support + c_support)
+                if score >= self.min_score_threshold:
+                    expected_scores[pattern] = score
+
+        return expected_scores
+
+    def rank_actual_patterns(self, normal_support, fault_support):
+        """Calculate actual pattern score A(ρ) = P(ρ)/(C(ρ) + P(ρ))"""
+        actual_scores = {}
+
+        for pattern in fault_support:
+            p_support = fault_support[pattern]
+            c_support = normal_support.get(pattern, 0)
+
+            if c_support + p_support > 0:
+                score = p_support / (c_support + p_support)
+                if score >= self.min_score_threshold:
+                    actual_scores[pattern] = score
+
+        return actual_scores
 
 
-def calculate_all_node_fault_modes(train_df, predict_df, nodes, column_stats=None):
-    all_sorted_patterns = []
-    # print("*****enter calculate_all_node_fault_modes*****")
+class PatternAggregator:
+    """Pattern aggregator, aggregate expected and actual patterns, output root cause candidates"""
 
-    for node in nodes:
-        # Get the ranking pattern for each node
-        sorted_patterns = calculate_node_fault_mode(train_df, predict_df, node, column_stats)
+    def __init__(self, dependency_graph=None):
+        self.dependency_graph = dependency_graph or {}
 
-        # print("sorted_patterns:",sorted_patterns)
+    def filter_redundant_patterns(self, expected_scores, actual_scores):
+        """Filter redundant patterns, keep root patterns"""
+        all_patterns = {}
 
-        # Extract metrics from sorted_patterns except duration_processed
-        aggregated_patterns = {col: score for col, score in sorted_patterns if col != "duration_processed"}
+        for pattern, score in expected_scores.items():
+            all_patterns[pattern] = max(all_patterns.get(pattern, 0), score)
 
-        # Extract duration_processed score
-        duration_score = next((score for col, score in sorted_patterns if col == "duration_processed"), 0)
+        for pattern, score in actual_scores.items():
+            all_patterns[pattern] = max(all_patterns.get(pattern, 0), score)
 
-        # Multiply other metric scores by duration_processed score
-        aggregated_patterns = {f"{node}>{col}": score * duration_score for col, score in aggregated_patterns.items()}
+        return all_patterns
 
-        # Add the processed metrics to the total sorted_patterns list
-        for col, score in aggregated_patterns.items():
-            all_sorted_patterns.append((col, score))
+    def aggregate_patterns(self, expected_scores, actual_scores):
+        """Aggregate patterns and sort"""
+        filtered_patterns = self.filter_redundant_patterns(expected_scores, actual_scores)
 
-    # Finally, sort all metrics by score in descending order
-    all_sorted_patterns = sorted(all_sorted_patterns, key=lambda item: item[1], reverse=True)
-    # print("**********all_sorted_patterns:",all_sorted_patterns)
-    # Extract node names and metric names
-    service_list = []
-    metrics_list = []
-    nonservice_list = []
+        sorted_patterns = sorted(
+            filtered_patterns.items(),
+            key=lambda x: (1 if "duration" in x[0] else 0, x[1]),
+            reverse=True,
+        )
 
-    for col, score in all_sorted_patterns:
-        col_new = re.sub(r"(_processed|_final)$", "", col)
-        node_name, metric_name = col_new.split(">", 1)
-
-        # Add node names and metric names to their respective lists, avoiding duplicates
-        if node_name not in service_list:
-            service_list.append(node_name)
-        if metric_name not in metrics_list:
-            metrics_list.append(metric_name)
-        nonservice_list.append(col_new)
-    return service_list, nonservice_list
+        return sorted_patterns
 
 
-def reduce_nonservice_list(list2reduce, reduce_json):
-    # Create a new list to store deduplicated elements
-    reduced_list = []
+class RootCauseAnalyzer:
+    """Root cause analysis main class - optimized version"""
 
-    # Record services that have already appeared to prevent duplicate additions
-    seen_services = set()
+    def __init__(self, min_support=None, min_score=None, sigma_threshold=None):
+        self.anomaly_detector = AnomalyDetector(sigma_threshold)
+        self.data_integrator = DataIntegrator()
+        self.pattern_miner = PatternMiner(min_support)
+        self.pattern_ranker = PatternRanker(min_score)
+        self.pattern_aggregator = PatternAggregator()
 
-    # Iterate through each item in nonservice_list
-    for item in list2reduce:
-        service, metric = item.split(">")
+    def analyze_node_patterns(self, train_df, fault_df, node_name):
+        """Analyze anomaly patterns for a single node"""
+        train_node = train_df[train_df["name"] == node_name].copy()
+        fault_node = fault_df[fault_df["name"] == node_name].copy()
 
-        # Check if the metric exists in reduce_json
-        if metric in reduce_json:
-            # Find the equivalent service group for this metric
-            for group in reduce_json[metric]:
-                # If the current service is in the group, and the first service in the group has not been added
-                if service in group:
-                    first_service = group[0]
-                    # Generate the equivalent item and ensure only the first occurrence of the service is added
-                    if f"{first_service}>{metric}" not in seen_services:
-                        reduced_list.append(f"{first_service}>{metric}")
-                        seen_services.add(f"{first_service}>{metric}")
-                    break
-        else:
-            # If the metric of the service item is not in reduce_json, add it directly
-            if item not in seen_services:
-                reduced_list.append(item)
-                seen_services.add(item)
+        if len(train_node) == 0 or len(fault_node) == 0:
+            return []
 
-    return reduced_list
+        metric_columns = [col for col in train_node.columns if col.startswith("metric@")]
+        metric_columns.append("duration")
+
+        self.anomaly_detector.fit_baseline(train_node, metric_columns)
+
+        train_processed = self.data_integrator.generate_metric_events(
+            train_node, self.anomaly_detector
+        )
+        train_processed = self.data_integrator.generate_log_events(train_processed)
+
+        fault_processed = self.data_integrator.generate_metric_events(
+            fault_node, self.anomaly_detector
+        )
+        fault_processed = self.data_integrator.generate_log_events(fault_processed)
+
+        event_columns = [
+            col
+            for col in train_processed.columns
+            if col.endswith("_anomaly") or col.endswith("_change")
+        ]
+
+        normal_support = self.pattern_miner.calculate_support(train_processed, event_columns)
+        fault_support = self.pattern_miner.calculate_support(fault_processed, event_columns)
+
+        expected_scores = self.pattern_ranker.rank_expected_patterns(normal_support, fault_support)
+        actual_scores = self.pattern_ranker.rank_actual_patterns(normal_support, fault_support)
+
+        patterns = self.pattern_aggregator.aggregate_patterns(expected_scores, actual_scores)
+
+        return patterns
+
+    def analyze_all_nodes(self, train_df, fault_df, nodes):
+        """Analyze all nodes - pre-grouped optimization version"""
+        # Pre-group by node to avoid repeated filtering
+        train_groups = {node: train_df[train_df["name"] == node].copy() for node in nodes}
+        fault_groups = {node: fault_df[fault_df["name"] == node].copy() for node in nodes}
+
+        all_node_patterns = {}
+
+        for node in nodes:
+            train_node = train_groups[node]
+            fault_node = fault_groups[node]
+
+            if len(train_node) == 0 or len(fault_node) == 0:
+                continue
+
+            metric_columns = [col for col in train_node.columns if col.startswith("metric@")]
+            metric_columns.append("duration")
+
+            # Each node uses independent detector
+            node_detector = AnomalyDetector(self.anomaly_detector.sigma_threshold)
+            node_detector.fit_baseline(train_node, metric_columns)
+
+            train_processed = self.data_integrator.generate_metric_events(train_node, node_detector)
+            train_processed = self.data_integrator.generate_log_events(train_processed)
+
+            fault_processed = self.data_integrator.generate_metric_events(fault_node, node_detector)
+            fault_processed = self.data_integrator.generate_log_events(fault_processed)
+
+            event_columns = [
+                col
+                for col in train_processed.columns
+                if col.endswith("_anomaly") or col.endswith("_change")
+            ]
+
+            normal_support = self.pattern_miner.calculate_support(train_processed, event_columns)
+            fault_support = self.pattern_miner.calculate_support(fault_processed, event_columns)
+
+            expected_scores = self.pattern_ranker.rank_expected_patterns(
+                normal_support, fault_support
+            )
+            actual_scores = self.pattern_ranker.rank_actual_patterns(normal_support, fault_support)
+
+            patterns = self.pattern_aggregator.aggregate_patterns(expected_scores, actual_scores)
+
+            if patterns:
+                all_node_patterns[node] = patterns
+
+        # Calculate service scores
+        service_scores = {}
+        for node, patterns in all_node_patterns.items():
+            if patterns:
+                max_score = max([score for _, score in patterns])
+                service_scores[node] = max_score
+
+        service_list = sorted(service_scores.keys(), key=lambda x: service_scores[x], reverse=True)
+
+        # Generate nonservice list
+        nonservice_patterns = []
+        for node, patterns in all_node_patterns.items():
+            for pattern, score in patterns:
+                clean_pattern = re.sub(r"(_anomaly|_change)$", "", pattern)
+                nonservice_patterns.append((f"{node}>{clean_pattern}", score))
+
+        nonservice_list = [
+            pattern for pattern, _ in sorted(nonservice_patterns, key=lambda x: x[1], reverse=True)
+        ]
+
+        # Fallback sorting: if no pattern results, sort nodes by fault phase sample size in descending order, ensure not empty
+        if not service_list:
+            node_sizes = {n: len(fault_groups[n]) for n in nodes}
+            service_list = sorted(
+                [n for n in nodes if node_sizes.get(n, 0) > 0],
+                key=lambda x: node_sizes[x],
+                reverse=True,
+            )
+            if not service_list:
+                service_list = nodes[:]
+
+        if not nonservice_list:
+            nonservice_list = [f"{n}>duration" for n in service_list]
+
+        return service_list, nonservice_list
 
 
 def hit_ratio_at_k(actual_root_causes, predicted_top_k, k):
+    """Calculate HR@k"""
     hr_k = []
     for actual_roots, predicted_roots in zip(actual_root_causes, predicted_top_k):
-        # Check if the predicted top k root causes contain the actual root cause
         hit = any(root in predicted_roots[:k] for root in actual_roots)
         hr_k.append(hit)
     return np.mean(hr_k)
 
 
 def ndcg_at_k(actual_root_causes, predicted_top_k, k):
+    """Calculate NDCG@k"""
     ndcg_k = []
     for actual_roots, predicted_roots in zip(actual_root_causes, predicted_top_k):
-        # Calculate DCG@k
         dcg = 0
         for i, predicted_root in enumerate(predicted_roots[:k]):
             rel = 1 if predicted_root in actual_roots else 0
-            dcg += (2**rel - 1) / np.log2(i + 2)  # i+2 for 1-based index
+            dcg += (2**rel - 1) / np.log2(i + 2)
 
-        # Calculate IDCG@k (DCG@k in ideal case)
         idcg = 0
         ideal_relevance = [1 if root in actual_roots else 0 for root in predicted_roots[:k]]
         ideal_relevance.sort(reverse=True)
         for i, rel in enumerate(ideal_relevance):
-            idcg += (2**rel - 1) / np.log2(i + 2)  # i+2 for 1-based index
+            idcg += (2**rel - 1) / np.log2(i + 2)
 
-        # Calculate NDCG@k
         ndcg_k.append(dcg / idcg if idcg > 0 else 0)
 
     return np.mean(ndcg_k)
 
 
 def sub_main(train_path, predict_path, failure_label_path, nodes):
-    print(f"\n=== Start processing folder ===")
+    """Main diagnosis process - using nezha optimization algorithm"""
+    print(f"\n=== Starting folder processing ===")
     print(f"Training data path: {train_path}")
     print(f"Prediction data path: {predict_path}")
 
     # Load data
-    print("\n[1/4] Loading data...")
-    try:
-        train_df = pd.read_csv(train_path + "/data_final.csv", on_bad_lines='skip')
-        if len(train_df) > 100000:
-            print("Training set has more than 100k rows, switching to data_final_sampled.csv")
-            train_df = pd.read_csv(train_path + "/data_final_sampled.csv", on_bad_lines='skip')
-    except Exception as e:
-        print(f"Failed to read training data: {str(e)}")
-        return None, None, None, None
+    print("Loading data...")
+    train_df = pd.read_csv(train_path + "/data_final.csv")
+    predict_df = pd.read_csv(predict_path + "/data_final.csv")
+    if len(train_df) > 100000:
+        print("Training set rows > 100k, switching to data_final_sampled.csv")
+        train_df = pd.read_csv(train_path + "/data_final_sampled.csv")
+    if len(predict_df) > 100000:
+        print("Prediction set rows > 100k, switching to data_final_sampled.csv")
+        predict_df = pd.read_csv(predict_path + "/data_final_sampled.csv")
 
-    try:
-        predict_df = pd.read_csv(predict_path + "/data_final.csv", on_bad_lines='skip')
-        if len(predict_df) > 100000:
-            print("Prediction set has more than 100k rows, switching to data_final_sampled.csv")
-            try:
-                predict_df = pd.read_csv(predict_path + "/data_final_sampled.csv", on_bad_lines='skip')
-            except FileNotFoundError:
-                print(f"Sampled file not found, using original file")
-                pass
-    except Exception as e:
-        print(f"Failed to read prediction data: {str(e)}")
-        return None, None, None, None
+    def sample_data(df, size, select_outstanding=False, random_state=42):
+        """Sample data: select_outstanding=True selects outstanding data (high variance), False selects stable data (low variance)"""
+        if len(df) <= size:
+            return df
 
-    if train_df is None or predict_df is None or len(train_df) == 0 or len(predict_df) == 0:
-        print("Data read failed or is empty")
-        return None, None, None, None
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        if len(numeric_cols) > 0:
+            variances = df[numeric_cols].var(axis=1)
+            indices = (
+                variances.nlargest(size).index
+                if select_outstanding
+                else variances.nsmallest(size).index
+            )
+            return df.loc[indices]
+        else:
+            return df.sample(n=size, random_state=random_state)
 
-    print(f"Training data shape: {train_df.shape}")
-    print(f"Prediction data shape: {predict_df.shape}")
+    TRAIN_SIZE = 1500
+    PREDICT_SIZE = 100
+
+    # Modify sampling section
+    train_df = sample_data(train_df, TRAIN_SIZE, select_outstanding=False)  # Select stable data
+    predict_df = sample_data(predict_df, PREDICT_SIZE, select_outstanding=True)  # Select outstanding data
+
+
 
     # Keep common columns
-    print("\n[2/4] Processing common columns...")
+    print("Processing common columns...")
     common_columns = train_df.columns.intersection(predict_df.columns)
-    if len(common_columns) == 0:
-        print("No common columns")
-        return None, None, None, None
     train_df = train_df[common_columns]
     predict_df = predict_df[common_columns]
     print(f"Number of common columns: {len(common_columns)}")
 
-    # Remove redundant log columns
-    print("\n[3/4] Removing redundant log columns...")
-    drop_log = ["log@httpcore.connection", "log@urllib3.connectionpool", "log@httpx", "log@httpcore.http11"]
-    columns_to_drop = [col for col in train_df.columns if any(col.startswith(prefix) for prefix in drop_log)]
-    train_df = train_df.drop(columns=columns_to_drop)
-    predict_df = predict_df.drop(columns=columns_to_drop)
-    print(f"Number of log columns removed: {len(columns_to_drop)}")
-
-    # Calculate fault modes for all nodes
-    print("\n[4/4] Calculating fault modes...")
-    data_names = set(train_df['name'].unique()) | set(predict_df['name'].unique())
+    # Get node intersection
+    data_names = set(train_df["name"].unique()) | set(predict_df["name"].unique())
     nodes = list(set(nodes) & data_names)
-    if len(nodes) == 0:
-        print("No matching nodes")
-        return None, None, None, None
     print(f"Number of services in data: {len(data_names)}")
     print(f"Number of services after intersection: {len(nodes)}")
     print(f"Service list after intersection: {nodes}")
-    
-    try:
-        service_list, nonservice_list = calculate_all_node_fault_modes(train_df, predict_df, nodes)
-        print(f"Detected service root causes: {service_list}")
-        print(f"Detected non-service root causes: {nonservice_list}")
-    except Exception as e:
-        print(f"Failed to calculate fault modes: {str(e)}")
-        return None, None, None, None
+
+    # Execute root cause analysis
+    print("Using nezha algorithm for root cause analysis...")
+    analyzer = RootCauseAnalyzer()
+    service_list, nonservice_list = analyzer.analyze_all_nodes(train_df, predict_df, nodes)
 
     # Get labels
     try:
@@ -309,6 +418,8 @@ def sub_main(train_path, predict_path, failure_label_path, nodes):
             failure_label = json.load(f)
         service_label = failure_label[label_str]["service"]
         nonservice_label = failure_label[label_str]["nonservice"]
+        print(f"Detected service root causes: {service_list}")
+        print(f"Detected non-service root causes: {nonservice_list}")
         print(f"Actual service root causes: {service_label}")
         print(f"Actual non-service root causes: {nonservice_label}")
     except Exception as e:
@@ -318,7 +429,15 @@ def sub_main(train_path, predict_path, failure_label_path, nodes):
     return service_list, nonservice_list, service_label, nonservice_label
 
 
-def write_results_to_csv(service_labels, service_lists, nonservice_labels, nonservice_lists, ks=[1, 3, 5], filename="evaluation_results.csv"):
+def write_results_to_csv(
+    service_labels,
+    service_lists,
+    nonservice_labels,
+    nonservice_lists,
+    ks=[1, 3, 5],
+    filename="nezha_evaluation_results.csv",
+):
+    """Save evaluation results to CSV file"""
     results = []
     for k in ks:
         hr_k = hit_ratio_at_k(service_labels, service_lists, k)
@@ -329,7 +448,9 @@ def write_results_to_csv(service_labels, service_lists, nonservice_labels, nonse
         results.append([k, hr_k, ndcg_k, nonservicehr_k, nonservicendcg_k])
 
     # Use pandas DataFrame to store results
-    df = pd.DataFrame(results, columns=["k", "HR@k", "NDCG@k", "nonserviceHR@k", "nonserviceNDCG@k"])
+    df = pd.DataFrame(
+        results, columns=["k", "HR@k", "NDCG@k", "nonserviceHR@k", "nonserviceNDCG@k"]
+    )
     df.to_csv(filename, index=False)
     print(f"Results saved to {filename}")
 
@@ -338,26 +459,125 @@ def write_results_to_csv(service_labels, service_lists, nonservice_labels, nonse
     print(df)
 
 
+def run_single_params(params):
+    """Run single hyperparameter set"""
+    sigma_threshold, min_support, min_score = params
+
+    # Set global parameters
+    global SIGMA_THRESHOLD, MIN_SUPPORT, MIN_SCORE
+    SIGMA_THRESHOLD = sigma_threshold
+    MIN_SUPPORT = min_support
+    MIN_SCORE = min_score
+
+    print(f"Running parameters: sigma={sigma_threshold}, support={min_support}, score={min_score}")
+
+    try:
+        # Read configuration file
+        with open("config.json", "r", encoding="utf-8") as f:
+            config = json.load(f)
+        dependency_graph = config["dependency_graph"]
+        jump_folder = config["jump_folder"]
+        data_final_dir = config["data_final_dir"]
+        normal_data_dir = config["normal_data_dir"]
+        output_dir = config["output_dir"]
+        failure_label_path = config["failure_label_path"]
+        nodes = config["nodes"]
+
+        # Get all data folders
+        folder_names = [
+            f
+            for f in os.listdir(data_final_dir)
+            if os.path.isdir(os.path.join(data_final_dir, f)) and f != "00"
+        ]
+        folder_names.sort()
+
+        train_path = normal_data_dir
+        service_lists = []
+        nonservice_lists = []
+        service_labels = []
+        nonservice_labels = []
+
+        param_folder = f"sigma{sigma_threshold}_support{min_support}_score{min_score:.2f}"
+        param_output_dir = os.path.join(output_dir, param_folder)
+        os.makedirs(param_output_dir, exist_ok=True)
+
+        detailed_results = []
+
+        # Process each folder
+        for folder_name in folder_names:
+            predict_path = data_final_dir + "/" + folder_name
+            label_match = re.search(r"(\d+)_", predict_path)
+            if not label_match:
+                continue
+
+            label_str = label_match.group(1)
+            if int(label_str) in jump_folder:
+                continue
+
+            try:
+                result = sub_main(train_path, predict_path, failure_label_path, nodes)
+                if result is None:
+                    continue
+                service_list, nonservice_list, service_label, nonservice_label = result
+
+                # Filter query nodes
+                service_list = [item for item in service_list if item != "query"]
+
+                service_lists.append(service_list)
+                nonservice_lists.append(nonservice_list)
+                service_labels.append(service_label)
+                nonservice_labels.append(nonservice_label)
+
+                detailed_results.append(
+                    {
+                        "task_id": label_str,
+                        "service_list": service_list,
+                        "nonservice_list": nonservice_list,
+                        "service_label": service_label,
+                        "nonservice_label": nonservice_label,
+                    }
+                )
+
+            except Exception as e:
+                print(f"Error processing folder {folder_name}: {str(e)}")
+                continue
+
+        # Save hyperparameter experiment results
+        if service_lists:
+            result_path = os.path.join(param_output_dir, "evaluation_results.csv")
+
+            # Calculate and save evaluation metrics
+            write_results_to_csv(
+                service_labels,
+                service_lists,
+                nonservice_labels,
+                nonservice_lists,
+                filename=result_path,
+            )
+
+            detailed_path = os.path.join(param_output_dir, "detailed_results.csv")
+            detailed_df = pd.DataFrame(detailed_results)
+            detailed_df.to_csv(detailed_path, index=False)
+
+            print(
+                f"Completed parameter combination: sigma={sigma_threshold}, support={min_support}, score={min_score}"
+            )
+            return param_folder
+
+        return None
+
+    except Exception as e:
+        print(
+            f"Parameter combination failed: sigma={sigma_threshold}, support={min_support}, score={min_score}, error: {e}"
+        )
+        return None
+
+
 if __name__ == "__main__":
     # Start timing
-    import time
-
     start_time = time.time()
 
-    # dependency_graph = {
-    #     "apache01": ["IG01", "IG02"],
-    #     "apache02": ["IG01", "IG02"],
-    #     "IG01": ["Tomcat01", "Tomcat02", "Tomcat03", "Tomcat04"],
-    #     "IG02": ["Tomcat01", "Tomcat02", "Tomcat03", "Tomcat04"],
-    #     "Tomcat01": ["Redis01", "Mysql01", "MG01", "MG02"],
-    #     "Tomcat02": ["Redis01", "Mysql01", "MG01", "MG02"],
-    #     "Tomcat03": ["Redis01", "Mysql01", "MG01", "MG02"],
-    #     "Tomcat04": ["Redis01", "Mysql01", "MG01", "MG02"],
-    #     "MG01": ["Redis02", "Mysql02"],
-    #     "MG02": ["Redis02", "Mysql02"],
-    # }
-    # jump_folder = [0, 1, 6, 13, 15, 23, 24, 25, 27, 28, 35, 37, 57, 60, 64, 68, 69, 70, 73, 80, 86, 89, 90, 93, 110, 119, 120, 126, 128, 129, 132, 134, 135]
-
+    # Read configuration
     with open("config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
     dependency_graph = config["dependency_graph"]
@@ -368,96 +588,103 @@ if __name__ == "__main__":
     failure_label_path = config["failure_label_path"]
     nodes = config["nodes"]
 
-    folder_names = [f for f in os.listdir(data_final_dir) if os.path.isdir(os.path.join(data_final_dir, f)) and f != "00"]
-    folder_names.sort()
-    # folder_names = folder_names[:3]
-    for folder_name in folder_names:
-        if os.path.exists(os.path.join(output_dir, folder_name, "evaluation_results.csv")):
-            folder_names.remove(folder_name)
-    print(f"\nFound {len(folder_names)} data folders")
+    # Hyperparameter search configuration
+    # sigma: 3-sigma threshold, support: minimum support, score: minimum score threshold
+    # MIN_SCORE: controls the minimum threshold for pattern scoring, determines which patterns are considered valid root cause candidates, lower means more candidates
+    # MIN_SUPPORT: controls the minimum frequency threshold for pattern occurrence, filters low-frequency noise patterns. Lower includes more low-frequency noise patterns.
+    param_combinations = [
+        (sigma, support, score)
+        for sigma in [2, 3, 4]
+        for support in [5, 20, 40, 80]
+        for score in [0.1, 0.3, 0.5, 0.7, 0.9]
+    ]
 
-    # The first one is the training set
-    train_path = normal_data_dir
-    print(f"Using {train_path} as training data")
 
-    evaluation_results_path = os.path.join(output_dir, "evaluation_results.csv")
-    os.makedirs(output_dir, exist_ok=True)
-    print(f"Output path: {output_dir}")
 
-    service_lists = []
-    nonservice_lists = []
-    service_labels = []
-    nonservice_labels = []
+    print(f"Starting nezha hyperparameter search, total {len(param_combinations)} parameter sets")
 
-    print("\nStart processing each folder...")
+    # Check completed experiments to avoid duplicate runs
+    pending = []
+    for p in param_combinations:
+        sigma, support, score = p
+        param_folder = f"sigma{sigma}_support{support}_score{score:.2f}"
+        result_file = os.path.join(output_dir, param_folder, "evaluation_results.csv")
+        if not os.path.exists(result_file):
+            pending.append(p)
 
-    # Define function to process a single folder
-    def process_folder(args):
-        i, folder_name = args
-        predict_path = data_final_dir + "/" + folder_name
-        label_match = re.search(r"(\d+)_", predict_path)
-        label_str = label_match.group(1)
+    print(f"Remaining {len(pending)} parameter sets to run")
 
-        print(f"\n[{i}/{len(folder_names)-1}] Processing folder: {folder_name}")
-        if int(label_str) in jump_folder:
-            print(f"Skipping folder {folder_name} (in jump list)")
-            return None
+    if len(pending) > 0:
+        # Parallel execution of hyperparameter tuning
+        max_workers = max(int(os.cpu_count() / 10 - 1), 1)
+        all_results = []
 
-        try:
-            result = sub_main(train_path, predict_path, failure_label_path, nodes)
-            if result is None:
-                print(f"Failed to process folder {folder_name}")
-                return None
-            service_list, nonservice_list, service_label, nonservice_label = result
-            # The original code had process_and_write_to_csv here, but it's not defined.
-            # Assuming it's a placeholder for a function that writes results to CSV.
-            # For now, we'll just print success and return the result.
-            print(f"Successfully processed folder {folder_name}")
-            return (service_list, nonservice_list, service_label, nonservice_label)
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            print(f"Error occurred while processing folder {folder_name}: {str(e)}")
-            return None
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = {executor.submit(run_single_params, p): p for p in pending}
+            completed = 0
 
-    # Prepare parameters for parallel processing
-    folder_args = [(i, folder_name) for i, folder_name in enumerate(folder_names, 1)]
+            for future in concurrent.futures.as_completed(futures):
+                completed += 1
+                try:
+                    result = future.result()
+                    if result:
+                        all_results.append(result)
+                        print(f"Progress [{completed}/{len(pending)}]: Completed {result}")
+                    else:
+                        print(f"Progress [{completed}/{len(pending)}]: Skipped")
+                except Exception as e:
+                    params = futures[future]
+                    print(f"Progress [{completed}/{len(pending)}]: Failed - parameters{params}, error: {str(e)}")
 
-    max_workers = max(int(os.cpu_count()/4 - 1), 1)
-    # Use process pool for parallel processing
-    with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
-        # Use as_completed to get completed tasks
-        futures = {executor.submit(process_folder, arg): arg for arg in folder_args}
-        results = []
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                result = future.result(timeout=30)  # Set overall timeout
-                if result:
-                    results.append(result)
-            except concurrent.futures.TimeoutError:
-                print(f"Task timed out")
-                continue
-            except Exception as e:
-                print(f"Task execution failed: {str(e)}")
-                continue
-
-    # Process results
-    for result in results:
-        if result:
-            service_list, nonservice_list, service_label, nonservice_label = result
-            service_lists.append(service_list)
-            nonservice_lists.append(nonservice_list)
-            service_labels.append(service_label)
-            nonservice_labels.append(nonservice_label)
-
-    print("\n=== Processing final results ===")
-    service_lists = [[item for item in sublist if item != "query"] for sublist in service_lists]
-    print(f"Number of root cause lists: {len(service_lists)}")
-    print(f"Root cause lists: {service_lists}")
-    write_results_to_csv(service_labels, service_lists, nonservice_labels, nonservice_lists, filename=evaluation_results_path)
-    print(f"Results saved to {evaluation_results_path}")
+        print(f"Hyperparameter tuning completed, successfully ran {len(all_results)} parameter sets")
 
     end_time = time.time()  # End timing
     run_time = end_time - start_time
-    print(f"\nTotal run time: {run_time:.4f} seconds")
-    print("=== Program completed ===")
+    print(f"\nTotal runtime: {run_time:.4f} seconds")
+    print("=== Program execution completed ===")
+
+    # Summarize HR@1 results from all parameter folders, sort and output
+    result_rows = []
+    hr_cols, ndcg_cols = set(), set()
+
+    for param_folder in os.listdir(output_dir):
+        param_path = os.path.join(output_dir, param_folder)
+        eval_csv = os.path.join(param_path, "evaluation_results.csv")
+        if os.path.isdir(param_path) and os.path.exists(eval_csv):
+            try:
+                df = pd.read_csv(eval_csv)
+                row = {"param_folder": param_folder}
+                for _, r in df.iterrows():
+                    k = int(r["k"])
+                    row[f"HR@{k}"] = r["HR@k"]
+                    row[f"NDCG@{k}"] = r["NDCG@k"]
+                    hr_cols.add(f"HR@{k}")
+                    ndcg_cols.add(f"NDCG@{k}")
+                    # If there are nonservice metrics, add them too
+                    if "nonserviceHR@k" in r.index:
+                        row[f"nonserviceHR@{k}"] = r["nonserviceHR@k"]
+                    if "nonserviceNDCG@k" in r.index:
+                        row[f"nonserviceNDCG@{k}"] = r["nonserviceNDCG@k"]
+                result_rows.append(row)
+            except Exception as e:
+                print(f"Failed to read {eval_csv}: {e}")
+
+    if result_rows:
+        # Ensure metrics and k are ordered
+        def colkey(x):
+            if "@" in x:
+                return (int(x.split("@")[1]), x.split("@")[0])
+            return (-1, x)
+
+        extra_cols = set()
+        for r in result_rows:
+            extra_cols.update(r.keys())
+        extra_cols.discard("param_folder")
+        columns = ["param_folder"] + sorted(extra_cols, key=colkey)
+        df = pd.DataFrame(result_rows)[columns]
+        if "HR@1" in df.columns:
+            df = df.sort_values("HR@1", ascending=False)
+        df.to_csv(os.path.join(output_dir, "all_results.csv"), index=False)
+        print(f"Output {len(df)} rows to all_results.csv")
+    else:
+        print("No results")

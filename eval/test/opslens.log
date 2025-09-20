@@ -1,0 +1,95 @@
+INFO:root:[ConfigManager] Config file loaded successfully: /Users/lvkoukou/DDS/opslens/Opslens2_Submit/dataset_config.yaml
+INFO:root:[ConfigManager] Current dataset: bank
+INFO:chromadb.telemetry.product.posthog:Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+INFO:chromadb.telemetry.product.posthog:Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+INFO:chromadb.telemetry.product.posthog:Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+INFO:root:[Tool Ecosystem] Using smart analysis for metric_tools: 12 functions
+INFO:root:[Tool Ecosystem] Pruned 0 stale tools from tools.bank_metric_tools
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_analyze_app_kpi_anomalies_b0d84adb (ID: 70b7864c-349e-4b63-9602-966f98a15ead)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_detect_metric_anomalies_3b637087 (ID: 195f8e7a-b07d-48fe-b4ce-5736ceccca0f)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_detect_metric_anomalies_by_shape_8025a14a (ID: 19d74ce6-dd4a-4167-bce1-2142e7d43ecd)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_detect_metric_anomalies_from_files_51fa07e4 (ID: cebb4d33-99af-46b7-82d1-0cab0e74d03a)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_find_metric_anomalies_9bd4eead (ID: ef359fa7-25ed-442c-8786-eada4f026e40)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_find_metric_anomalies_aaddc52f (ID: 1a00c22c-2cd4-4524-b6b9-8aad5985b1b4)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_find_metric_anomalies_by_shape_0020b3c4 (ID: 08c89c2f-48f4-4f3f-bd87-d6eb6f680898)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_find_metric_anomalies_by_shape_1dd91b92 (ID: de1af79b-a3c8-4a26-832d-cfa6633e7f29)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_find_metric_anomalies_by_shape_5b5af2fd (ID: f50561d7-31c4-4cd0-ae72-bbd209c51989)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_find_metric_anomalies_by_shape_86fb5e5a (ID: c0c07f14-3fb6-4f4b-aafc-6174812e9061)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_find_metric_anomalies_by_shape_a949f08f (ID: 9d04a5ba-894a-4c13-888f-aa73f62d75bd)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_metric_tools_find_metric_anomalies_by_shape_d49d4823 (ID: 13d9df92-35ff-4248-92f7-aa388d62f8b0)
+INFO:root:[Tool Ecosystem] Synced 12 tools from tools.bank_metric_tools
+INFO:root:[Tool Ecosystem] Using smart analysis for log_tools: 4 functions
+INFO:root:[Tool Ecosystem] Pruned 0 stale tools from tools.bank_log_tools
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_log_tools_find_and_rank_error_logs_89598df7 (ID: f6faecff-85ba-4157-98b0-7b6c7d59d446)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_log_tools_find_log_evidence_in_anomaly_window_498ac326 (ID: 600851b6-217a-4e2c-bb6f-92ed16bba3be)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_log_tools_find_root_cause_from_logs_7c3dab74 (ID: 80be0d41-473d-4228-b543-46a0d5974880)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_log_tools_search_log_patterns_457b80b8 (ID: df85617b-fa71-4b94-8952-9de1747cb28f)
+INFO:root:[Tool Ecosystem] Synced 4 tools from tools.bank_log_tools
+INFO:root:[Tool Ecosystem] Using smart analysis for trace_tools: 5 functions
+INFO:root:[Tool Ecosystem] Pruned 0 stale tools from tools.bank_trace_tools
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_trace_tools_detect_span_duration_anomalies_72617c2e (ID: beb429c3-2ca1-4a3a-b4d1-4cec191fc304)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_trace_tools_diagnose_and_group_downstream_faulty_spans_95e3fbf3 (ID: 6917458b-88ad-494e-b567-467a26ff3d08)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_trace_tools_find_anomalous_spans_by_duration_e4e3b926 (ID: f9d73152-ac3f-4787-bf03-14b53bda8bfd)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_trace_tools_find_trace_chain_anomalies_aff37679 (ID: e09972cb-cbed-4d16-8d66-1268195424fe)
+INFO:httpx:HTTP Request: POST https://api.chatanywhere.tech/v1/embeddings "HTTP/1.1 200 OK"
+INFO:root:Added new tool: tools.bank_trace_tools_find_trace_chain_anomalies_bd2bad31 (ID: cfa06abb-465d-4950-ab45-87b3e3c2f90d)
+INFO:root:[Tool Ecosystem] Synced 5 tools from tools.bank_trace_tools
+INFO:root:[ConfigManager] Config file loaded successfully: /Users/lvkoukou/DDS/opslens/Opslens2_Submit/dataset_config.yaml
+INFO:root:[ConfigManager] Current dataset: bank
+INFO:chromadb.telemetry.product.posthog:Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+INFO:root:Loaded 12 tools from storage
+INFO:root:  - tools.bank_metric_tools_analyze_app_kpi_anomalies_b0d84adb (ID: 70b7864c-349e-4b63-9602-966f98a15ead)
+INFO:root:  - tools.bank_metric_tools_detect_metric_anomalies_3b637087 (ID: 195f8e7a-b07d-48fe-b4ce-5736ceccca0f)
+INFO:root:  - tools.bank_metric_tools_detect_metric_anomalies_by_shape_8025a14a (ID: 19d74ce6-dd4a-4167-bce1-2142e7d43ecd)
+INFO:root:  - tools.bank_metric_tools_detect_metric_anomalies_from_files_51fa07e4 (ID: cebb4d33-99af-46b7-82d1-0cab0e74d03a)
+INFO:root:  - tools.bank_metric_tools_find_metric_anomalies_9bd4eead (ID: ef359fa7-25ed-442c-8786-eada4f026e40)
+INFO:root:  - tools.bank_metric_tools_find_metric_anomalies_aaddc52f (ID: 1a00c22c-2cd4-4524-b6b9-8aad5985b1b4)
+INFO:root:  - tools.bank_metric_tools_find_metric_anomalies_by_shape_0020b3c4 (ID: 08c89c2f-48f4-4f3f-bd87-d6eb6f680898)
+INFO:root:  - tools.bank_metric_tools_find_metric_anomalies_by_shape_1dd91b92 (ID: de1af79b-a3c8-4a26-832d-cfa6633e7f29)
+INFO:root:  - tools.bank_metric_tools_find_metric_anomalies_by_shape_5b5af2fd (ID: f50561d7-31c4-4cd0-ae72-bbd209c51989)
+INFO:root:  - tools.bank_metric_tools_find_metric_anomalies_by_shape_86fb5e5a (ID: c0c07f14-3fb6-4f4b-aafc-6174812e9061)
+INFO:root:  - tools.bank_metric_tools_find_metric_anomalies_by_shape_a949f08f (ID: 9d04a5ba-894a-4c13-888f-aa73f62d75bd)
+INFO:root:  - tools.bank_metric_tools_find_metric_anomalies_by_shape_d49d4823 (ID: 13d9df92-35ff-4248-92f7-aa388d62f8b0)
+INFO:chromadb.telemetry.product.posthog:Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+INFO:root:Loaded 4 tools from storage
+INFO:root:  - tools.bank_log_tools_find_and_rank_error_logs_89598df7 (ID: f6faecff-85ba-4157-98b0-7b6c7d59d446)
+INFO:root:  - tools.bank_log_tools_find_log_evidence_in_anomaly_window_498ac326 (ID: 600851b6-217a-4e2c-bb6f-92ed16bba3be)
+INFO:root:  - tools.bank_log_tools_find_root_cause_from_logs_7c3dab74 (ID: 80be0d41-473d-4228-b543-46a0d5974880)
+INFO:root:  - tools.bank_log_tools_search_log_patterns_457b80b8 (ID: df85617b-fa71-4b94-8952-9de1747cb28f)
+INFO:chromadb.telemetry.product.posthog:Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+INFO:root:Loaded 5 tools from storage
+INFO:root:  - tools.bank_trace_tools_detect_span_duration_anomalies_72617c2e (ID: beb429c3-2ca1-4a3a-b4d1-4cec191fc304)
+INFO:root:  - tools.bank_trace_tools_diagnose_and_group_downstream_faulty_spans_95e3fbf3 (ID: 6917458b-88ad-494e-b567-467a26ff3d08)
+INFO:root:  - tools.bank_trace_tools_find_anomalous_spans_by_duration_e4e3b926 (ID: f9d73152-ac3f-4787-bf03-14b53bda8bfd)
+INFO:root:  - tools.bank_trace_tools_find_trace_chain_anomalies_aff37679 (ID: e09972cb-cbed-4d16-8d66-1268195424fe)
+INFO:root:  - tools.bank_trace_tools_find_trace_chain_anomalies_bd2bad31 (ID: cfa06abb-465d-4950-ab45-87b3e3c2f90d)
+INFO:root:[Tool Ecosystem] Using smart analysis for metric_tools: 12 functions
+INFO:root:[Tool Ecosystem] Pruned 0 stale tools from tools.bank_metric_tools
+INFO:root:[Tool Ecosystem] Synced 0 tools from tools.bank_metric_tools
+INFO:root:[Tool Ecosystem] Using smart analysis for log_tools: 4 functions
+INFO:root:[Tool Ecosystem] Pruned 0 stale tools from tools.bank_log_tools
+INFO:root:[Tool Ecosystem] Synced 0 tools from tools.bank_log_tools
+INFO:root:[Tool Ecosystem] Using smart analysis for trace_tools: 5 functions
+INFO:root:[Tool Ecosystem] Pruned 0 stale tools from tools.bank_trace_tools
+INFO:root:[Tool Ecosystem] Synced 0 tools from tools.bank_trace_tools
+INFO:root:Pulling image python:3-slim...

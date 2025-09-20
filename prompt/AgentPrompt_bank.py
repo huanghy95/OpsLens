@@ -1,11 +1,21 @@
-metric_anomaly_events_max_count = 30
-metric_anomaly_events_min_count = 5
+from prompt.WorkflowPrompt import tool_generation_format
 
-trace_anomaly_events_max_count = 3
+metric_anomaly_events_max_count = 30
+metric_anomaly_events_min_count = 7
+
+trace_anomaly_events_max_count = 10
 trace_anomaly_events_min_count = 0
 
-log_anomaly_events_max_count = 3
+log_anomaly_events_max_count = 10
 log_anomaly_events_min_count = 0
+
+try:
+    from config_manager import get_relative_root_path
+    Bank_Data_Relative_Root_Path = get_relative_root_path()
+except ImportError:
+    Bank_Data_Relative_Root_Path = './Bank/telemetry'
+
+tool_generation_format = tool_generation_format.format(Data_Relative_Root_Path=Bank_Data_Relative_Root_Path)
 
 time_process_guide = f"""
 <time_process_guide>
@@ -139,14 +149,13 @@ cand = """## POSSIBLE ROOT CAUSE REASONS:
 
 background = f"""## TELEMETRY DIRECTORY STRUCTURE:
 
-- You can access the telemetry directory in our microservices system: `./dataset/Bank/telemetry/`.
+- You can access the telemetry directory in our microservices system: `{Bank_Data_Relative_Root_Path}/`.
 
-- This directory contains subdirectories organized by a date (e.g., `./dataset/Bank/telemetry/2021_03_04/`). 
+- This directory contains subdirectories organized by a date (e.g., `{Bank_Data_Relative_Root_Path}/2021_03_04/`). 
 
-- Within each date-specific directory, you’ll find these subdirectories: `metric`, `trace`, and `log` (e.g., `./dataset/Bank/telemetry/2021_03_04/metric/`).
+- Within each date-specific directory, you’ll find these subdirectories: `metric`, `trace`, and `log` (e.g., `{Bank_Data_Relative_Root_Path}/2021_03_04/metric/`).
 
-- The telemetry data in those subdirectories is stored in CSV format (e.g., `./dataset/Bank/telemetry/2021_03_04/metric/metric_container.csv`).
-
+- The telemetry data in those subdirectories is stored in CSV format (e.g., `{Bank_Data_Relative_Root_Path}/2021_03_04/metric/metric_container.csv`).
 
 ## DATA SCHEMA
 
@@ -240,7 +249,7 @@ Let's begin."""
 system_investigator = f'''
 you are the router of a DevOps Assistant system for failure diagnosis.Please follow the plan given to you to solve the issue.
 
-Your response should follow the format below:
+Your response should strictly follow the specified JSON-like format below: 
 {{"explorer": "explorer name", "task": "specific investigation task"}}
 
 available explorers:metric_explorer, trace_explorer, log_explorer
@@ -412,19 +421,32 @@ Do not include points from the extended window when reporting anomalies.
 {trace_refine_rules}
 """
 
-
-
+kpi_detection_rules = """
+You must detect the following KPIs to find anomalies.Do not detect other KPIs. 
+-   **High CPU usage**: Indicated by the metric `OSLinux-CPU_CPU_CPUCpuUtil` or 'OSLinux-CPU_CPU_CPUUserTime'.
+-   **High memory usage**: Indicated by the metric `OSLinux-OSLinux_MEMORY_MEMORY_NoCacheMemPerc` or 'OSLinux-OSLinux_MEMORY_MEMORY_MEMUsedMemPerc' or 'OSLinux-OSLinux_MEMORY_MEMORY_MEMFreeMem'.
+-   **Network latency or Network packet loss**: These can be observed through the metric `OSLinux-OSLinux_NETWORK_NETWORK_TCP-FIN-WAIT` or 'OSLinux-OSLinux_NETWORK_NETWORK_TotalTcpConnNum'.
+-   **High disk I/O read usage**: Can be observed using the metrics `OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdb_DSKReadWrite`.
+-   **High disk space usage**: Indicated by a sudden spike on either `OSLinux-OSLinux_FILESYSTEM_-tomcat_FSCapacity` or `OSLinux-OSLinux_FILESYSTEM_-apache_FSCapacity`.
+-   **High JVM CPU load**: Indicated by either `JVM-Operating System_7779_JVM_JVM_CPULoad` or `JVM-Operating System_7778_JVM_JVM_CPULoad`.
+-   **JVM Out of Memory (OOM) Heap**: Indicated by either `JVM-Memory_7778_JVM_Memory_NoHeapMemoryUsed` or `JVM-Memory_7779_JVM_Memory_NoHeapMemoryUsed`.
+"""
 
 metric_system_coder = f"""You are a DevOps assistant for writing Python code to answer DevOps questions. For each question, you need to write Python code to solve it by retrieving and processing telemetry data of the target system. Your generated Python code will be automatically submitted to a IPython Kernel. The execution result output in IPython Kernel will be used as the answer to the question.
 ## RULES OF PYTHON CODE WRITING:
 
-1. Use print() to display the execution results.IF use dataframe, please use to_string() to display all the dataframe.
+1. Use print() to display the final results and return the final result as a list of anomaly events. IF use dataframe, please use to_string() to display.
 2. Do not simulate any virtual situation or assume anything unknown. Solve the real problem.
 3. Do not visualize the data or draw pictures or graphs via Python. You can only provide text-based results. Never include the `matplotlib` or `seaborn` library in the code.
 4. All issues use **UTC+8** time. However, the local machine's default timezone is unknown. Please use `pytz.timezone('Asia/Shanghai')` to explicityly set the timezone to UTC+8.
-5. Always save figures to file in the current directory. Do not use plt.show(). All code required to complete this task must be contained within a single response.
+5. All code required to complete this task must be contained within a single response.
 
-The anomaly detection tool should not generate or visualize any images, and only produce structured output in the following format, please print the results and also save the results as csv:
+<tool_generation_format>
+{tool_generation_format}
+</tool_generation_format>
+
+The anomaly detection tool should not generate or visualize any images, and only produce structured output in the following format, please print the results and also save the results as csv.
+Please note that you should not output excessive content; only output the top 20 anomaly_events by anomaly severity.
 <output_format>
 anomaly_events = [anomaly_event_1, ...]
 anomaly_event = {{
@@ -438,7 +460,6 @@ anomaly_event = {{
 }}
 </output_format>
 
-{time_process_guide}
 
 There is some domain knowledge for you:
 
@@ -456,27 +477,26 @@ Your response should follow the Python block format below:
 If you find your code executed successfully, you can stop, do not continue to write anything.
 
 <kpi_detection_rules>
-You must detect the following KPIs to find anomalies.Do not detect other KPIs. 
--   **High CPU usage**: Indicated by the metric `OSLinux-CPU_CPU_CPUCpuUtil` or 'OSLinux-CPU_CPU_CPUUserTime'.
--   **High memory usage**: Indicated by the metric `OSLinux-OSLinux_MEMORY_MEMORY_NoCacheMemPerc` or 'OSLinux-OSLinux_MEMORY_MEMORY_MEMUsedMemPerc' or 'OSLinux-OSLinux_MEMORY_MEMORY_MEMFreeMem'.
--   **Network latency or Network packet loss**: These can be observed through the metric `OSLinux-OSLinux_NETWORK_NETWORK_TCP-FIN-WAIT` or 'OSLinux-OSLinux_NETWORK_NETWORK_TotalTcpConnNum'.
--   **High disk I/O read usage**: Can be observed using the metrics `OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdb_DSKReadWrite`.
--   **High disk space usage**: Indicated by a sudden spike on either `OSLinux-OSLinux_FILESYSTEM_-tomcat_FSCapacity` or `OSLinux-OSLinux_FILESYSTEM_-apache_FSCapacity`.
--   **High JVM CPU load**: Indicated by either `JVM-Operating System_7779_JVM_JVM_CPULoad` or `JVM-Operating System_7778_JVM_JVM_CPULoad`.
--   **JVM Out of Memory (OOM) Heap**: Indicated by either `JVM-Memory_7778_JVM_Memory_NoHeapMemoryUsed` or `JVM-Memory_7779_JVM_Memory_NoHeapMemoryUsed`.
+{kpi_detection_rules}
 </kpi_detection_rules>
 """
+
+
+
 
 
 
 log_system_coder = f"""You are a DevOps assistant for writing Python code to answer DevOps questions. For each question, you need to write Python code to solve it by retrieving and processing telemetry data of the target system. Your generated Python code will be automatically submitted to a IPython Kernel. The execution result output in IPython Kernel will be used as the answer to the question.
 ## RULES OF PYTHON CODE WRITING:
 
-1. Use print() to display the execution results.IF use dataframe, please use to_string() to display all the dataframe.
+1. Use print() to display the final results and return the final result as a list of anomaly events. IF use dataframe, please use to_string() to display.
 2. Do not simulate any virtual situation or assume anything unknown. Solve the real problem.
 3. Do not visualize the data or draw pictures or graphs via Python. You can only provide text-based results. Never include the `matplotlib` or `seaborn` library in the code.
 4. All issues use **UTC+8** time. However, the local machine's default timezone is unknown. Please use `pytz.timezone('Asia/Shanghai')` to explicityly set the timezone to UTC+8.
-5. Always save figures to file in the current directory. Do not use plt.show(). All code required to complete this task must be contained within a single response.
+5. All code required to complete this task must be contained within a single response.
+<tool_generation_format>
+{tool_generation_format}
+</tool_generation_format>
 
 The anomaly detection tool should not generate or visualize any images, and only produce structured output in the following format, please print the results and also save the results as csv:
 <output_format>
@@ -577,13 +597,15 @@ Metric-based anomalies reflect the operational state of components but can be no
 trace_system_coder = f"""You are a DevOps assistant for writing Python code to answer DevOps questions. For each question, you need to write Python code to solve it by retrieving and processing telemetry data of the target system. Your generated Python code will be automatically submitted to a IPython Kernel. The execution result output in IPython Kernel will be used as the answer to the question.
 ## RULES OF PYTHON CODE WRITING:
 
-1. Use print() to display the execution results.IF use dataframe, please use to_string() to display all the dataframe.
+1. Use print() to display the final results and return the final result as a list of anomaly events. IF use dataframe, please use to_string() to display.
 2. Do not simulate any virtual situation or assume anything unknown. Solve the real problem.
 3. Do not visualize the data or draw pictures or graphs via Python. You can only provide text-based results. Never include the `matplotlib` or `seaborn` library in the code.
 4. All issues use **UTC+8** time. However, the local machine's default timezone is unknown. Please use `pytz.timezone('Asia/Shanghai')` to explicityly set the timezone to UTC+8.
-5. Always save figures to file in the current directory. Do not use plt.show(). All code required to complete this task must be contained within a single response.
+5. All code required to complete this task must be contained within a single response.
 6. Detect all components that have trace(Tomcat,IG,MG).Not only the components that have metric-based anomalies.
-
+<tool_generation_format>
+{tool_generation_format}
+</tool_generation_format>
 
 The anomaly detection tool should not generate or visualize any images, and only produce structured output in the following format, please print the results and also save the results as csv:
 <output_format>
