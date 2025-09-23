@@ -101,8 +101,8 @@ datasets:
 global_config:
   # OpenAI API config
   openai:
-    api_key: "sk-zUdkQ55bbSDBCmEw5TLn8grsJXcSnnArYw9QpjSWq6RCgYRV"
-    base_url: "https://api.chatanywhere.tech/v1"
+    api_key: "<your_api_key>"
+    base_url: "<your_base_url>"
     model: "gpt-5-mini"
     embedding_model: "text-embedding-3-large"
 
