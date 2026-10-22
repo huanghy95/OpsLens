@@ -10,17 +10,6 @@ Experiments on the OpenRCA benchmark, covering **335 incidents** from three real
 
 **[Paper (ACM Digital Library)](https://dl.acm.org/doi/10.1145/3832783.3834501)** · **[Publication](#publication)** · **[Citation](#citation)**
 
-## Publication
-
-**Accepted at ASE 2026 (Industry Showcase)** and **published on October 7, 2026**.
-
-> **OpsLens: Runbook-Free Root Cause Analysis via Multi-agent Collaboration and Tool Management**
->
-> Haiyu Huang, Jiewei Lyu, Gou Tan, Pengfei Chen, Zhihan Jiang, Guangba Yu, Penghui Mi, Fuqiang Wang, Jian Han, Chongkang Tan, and Michael R. Lyu.
->
-> *Proceedings of the 41st IEEE/ACM International Conference on Automated Software Engineering (ASE '26)*, pp. 4116–4127. Association for Computing Machinery, 2026.
->
-> DOI: [10.1145/3832783.3834501](https://doi.org/10.1145/3832783.3834501).
 
 ## ✨ Features
 
