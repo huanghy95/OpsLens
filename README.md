@@ -8,7 +8,7 @@ Official code repository for the **ASE 2026** paper **OpsLens**. OpsLens is an L
 
 Experiments on the OpenRCA benchmark, covering **335 incidents** from three real-world systems (Bank, Market, and Telecom), achieve a **score rate of 0.80**.
 
-**[Paper (ACM Digital Library)](https://dl.acm.org/doi/10.1145/3832783.3834501)** · **[Publication](#publication)** · **[Citation](#citation)**
+**[Paper (ACM Digital Library)](https://dl.acm.org/doi/10.1145/3832783.3834501)** · **[Citation](#citation)**
 
 
 ## ✨ Features
