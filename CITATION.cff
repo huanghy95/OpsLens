@@ -1,0 +1,86 @@
+cff-version: 1.2.0
+message: "If you use OpsLens in your research, please cite our ASE 2026 paper listed below."
+type: software
+title: "OpsLens: Runbook-Free Root Cause Analysis via Multi-agent Collaboration and Tool Management"
+authors:
+  - family-names: Huang
+    given-names: Haiyu
+  - family-names: Lyu
+    given-names: Jiewei
+  - family-names: Tan
+    given-names: Gou
+  - family-names: Chen
+    given-names: Pengfei
+  - family-names: Jiang
+    given-names: Zhihan
+  - family-names: Yu
+    given-names: Guangba
+  - family-names: Mi
+    given-names: Penghui
+  - family-names: Wang
+    given-names: Fuqiang
+  - family-names: Han
+    given-names: Jian
+  - family-names: Tan
+    given-names: Chongkang
+  - family-names: Lyu
+    given-names: Michael R.
+repository-code: "https://github.com/huanghy95/OpsLens"
+url: "https://github.com/huanghy95/OpsLens"
+abstract: >-
+  OpsLens is a runbook-free root cause analysis framework for AIOps. It uses
+  LLM-based multi-agent collaboration to analyze logs, metrics, and traces,
+  with two-stage tool generation and quality-focused tool management.
+keywords:
+  - OpsLens
+  - AIOps
+  - root cause analysis
+  - large language models
+  - multi-agent systems
+  - multi-modal observability
+  - fault diagnosis
+  - tool generation
+  - tool management
+  - OpenRCA
+  - ASE 2026
+preferred-citation:
+  type: conference-paper
+  title: "OpsLens: Runbook-Free Root Cause Analysis via Multi-agent Collaboration and Tool Management"
+  authors:
+    - family-names: Huang
+      given-names: Haiyu
+    - family-names: Lyu
+      given-names: Jiewei
+    - family-names: Tan
+      given-names: Gou
+    - family-names: Chen
+      given-names: Pengfei
+    - family-names: Jiang
+      given-names: Zhihan
+    - family-names: Yu
+      given-names: Guangba
+    - family-names: Mi
+      given-names: Penghui
+    - family-names: Wang
+      given-names: Fuqiang
+    - family-names: Han
+      given-names: Jian
+    - family-names: Tan
+      given-names: Chongkang
+    - family-names: Lyu
+      given-names: Michael R.
+  collection-title: "Proceedings of the 41st IEEE/ACM International Conference on Automated Software Engineering"
+  collection-type: "Conference proceedings"
+  conference:
+    name: "ASE '26: 41st IEEE/ACM International Conference on Automated Software Engineering"
+    city: Munich
+    country: DE
+  publisher:
+    name: Association for Computing Machinery
+  year: 2026
+  month: 10
+  date-published: 2026-10-07
+  start: 4116
+  end: 4127
+  doi: "10.1145/3832783.3834501"
+  url: "https://doi.org/10.1145/3832783.3834501"

@@ -1,15 +1,33 @@
-# OpsLens 
+# OpsLens: Runbook-Free Root Cause Analysis via Multi-agent Collaboration and Tool Management
 
-![Python Version](https://img.shields.io/badge/Python-3776AB?&logo=python&logoColor=white-blue&label=3.12)&ensp;
+[![ASE 2026](https://img.shields.io/badge/ASE_2026-Accepted-2ea44f)](https://conf.researchr.org/track/ase-2026/ase-2026-industry-showcase)
+[![DOI](https://img.shields.io/badge/DOI-10.1145%2F3832783.3834501-blue)](https://doi.org/10.1145/3832783.3834501)
+![Python Version](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 
-We propose OpsLens, a generalizable RCA solution that performs collaborative analysis on multi-modal observability data. OpsLens eliminates the need for prebuilt tools or historical incident reports. It uses an LLM-based multi-agent system (MAS) and the two-stage tool generation with quality-focused to better interact with observability data and perform collaborative analysis. 
+Official code repository for the **ASE 2026** paper **OpsLens**. OpsLens is an LLM-based, runbook-free **root cause analysis (RCA)** framework for **AIOps**. It uses multi-agent collaboration to analyze multi-modal observability data—**logs, metrics, and traces**—without requiring prebuilt diagnostic tools or historical incident reports. Two-stage tool generation and quality-focused tool management support collaborative fault diagnosis.
 
-Experiments on public datasets  from three real-world systems  containing 335  incidents show that OpsLens achieves state-of-the-art RCA performance, with a score rate of 0.80.
+Experiments on the OpenRCA benchmark, covering **335 incidents** from three real-world systems (Bank, Market, and Telecom), achieve a **score rate of 0.80**.
+
+**[Paper (ACM Digital Library)](https://dl.acm.org/doi/10.1145/3832783.3834501)** · **[Publication](#publication)** · **[Citation](#citation)**
+
+## Publication
+
+**Accepted at ASE 2026 (Industry Showcase)** and **published on October 7, 2026**.
+
+> **OpsLens: Runbook-Free Root Cause Analysis via Multi-agent Collaboration and Tool Management**
+>
+> Haiyu Huang, Jiewei Lyu, Gou Tan, Pengfei Chen, Zhihan Jiang, Guangba Yu, Penghui Mi, Fuqiang Wang, Jian Han, Chongkang Tan, and Michael R. Lyu.
+>
+> *Proceedings of the 41st IEEE/ACM International Conference on Automated Software Engineering (ASE '26)*, pp. 4116–4127. Association for Computing Machinery, 2026.
+>
+> DOI: [10.1145/3832783.3834501](https://doi.org/10.1145/3832783.3834501).
 
 ## ✨ Features
-- LLM-based multi-agent system (MAS)
-- Two-stage tool generation with quality-focused tools management
-- Better interact with observability data and perform collaborative analysis. 
+
+- LLM-based multi-agent collaboration for runbook-free root cause analysis.
+- Multi-modal analysis of logs, metrics, and distributed traces.
+- Two-stage tool generation with quality-focused tool management.
+- Evaluation on the Bank, Market, and Telecom systems in OpenRCA.
 
 ## 💡Prerequisites
 OpsLens requires **Python >= 3.12**. 
@@ -111,3 +129,25 @@ python -m eval.evaluate \
 ## 📒Notes
 
 If you wish to experiment with other datasets(Telecom, Market), please first switch the `current_dataset` in dataset_config.yaml and organize the new dataset in accordance with the specified format.
+
+## Citation
+
+If you use OpsLens in your research, please cite our ASE 2026 paper:
+
+```bibtex
+@inproceedings{huang2026opslens,
+  author    = {Huang, Haiyu and Lyu, Jiewei and Tan, Gou and Chen, Pengfei and Jiang, Zhihan and Yu, Guangba and Mi, Penghui and Wang, Fuqiang and Han, Jian and Tan, Chongkang and Lyu, Michael R.},
+  title     = {{OpsLens}: Runbook-Free Root Cause Analysis via Multi-agent Collaboration and Tool Management},
+  booktitle = {Proceedings of the 41st IEEE/ACM International Conference on Automated Software Engineering},
+  series    = {ASE '26},
+  year      = {2026},
+  month     = oct,
+  pages     = {4116--4127},
+  publisher = {Association for Computing Machinery},
+  location  = {Munich, Germany},
+  doi       = {10.1145/3832783.3834501},
+  url       = {https://doi.org/10.1145/3832783.3834501}
+}
+```
+
+Citation metadata is also available in [`CITATION.cff`](CITATION.cff) for GitHub's **Cite this repository** feature.
